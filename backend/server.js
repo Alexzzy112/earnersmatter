@@ -1,0 +1,90 @@
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const crypto = require('crypto');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss');
+require('dotenv').config();
+
+const connectDB = require('./config/db');
+const routes = require('./routes');
+
+const app = express();
+
+// Security
+app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(cors({ origin: process.env.APP_URL || 'http://localhost:3000', credentials: true }));
+app.use(cookieParser());
+app.use(mongoSanitize());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// XSS sanitization middleware
+const sanitizeValue = (value) => {
+  if (typeof value === 'string') return xss(value);
+  if (Array.isArray(value)) return value.map(sanitizeValue);
+  if (value && typeof value === 'object') {
+    const sanitized = {};
+    for (const [key, val] of Object.entries(value)) {
+      sanitized[key] = sanitizeValue(val);
+    }
+    return sanitized;
+  }
+  return value;
+};
+
+app.use((req, res, next) => {
+  if (req.body) req.body = sanitizeValue(req.body);
+  if (req.query) req.query = sanitizeValue(req.query);
+  if (req.params) req.params = sanitizeValue(req.params);
+  next();
+});
+
+// Static files for uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// CSRF protection
+app.use((req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next();
+  }
+  const token = req.headers['x-csrf-token'];
+  const cookieToken = req.cookies?.['csrf-token'];
+  if (!token || !cookieToken || token !== cookieToken) {
+    return res.status(403).json({ success: false, message: 'CSRF token validation failed' });
+  }
+  next();
+});
+
+// CSRF token endpoint
+app.get('/api/csrf-token', (req, res) => {
+  const token = crypto.randomBytes(32).toString('hex');
+  res.cookie('csrf-token', token, { httpOnly: true, sameSite: 'strict' });
+  res.json({ success: true, csrfToken: token });
+});
+
+// Routes
+app.use('/api', routes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, message: 'Server is running', timestamp: new Date() });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
+  });
+});
+
+// Connect DB and start server
+connectDB().then(() => {
+  app.listen(process.env.PORT || 5000, () => {
+    console.log(`Server running on port ${process.env.PORT || 5000}`);
+  });
+});

@@ -1,0 +1,86 @@
+const express = require('express');
+const router = express.Router();
+const { auth } = require('../../middleware/auth');
+const { adminMiddleware } = require('../../middleware/admin');
+
+const adminDashboardController = require('../../controllers/admin/adminDashboardController');
+const adminUserController = require('../../controllers/admin/adminUserController');
+const adminDepositController = require('../../controllers/admin/adminDepositController');
+const adminWithdrawalController = require('../../controllers/admin/adminWithdrawalController');
+const adminProductController = require('../../controllers/admin/adminProductController');
+const adminPaymentAccountController = require('../../controllers/admin/adminPaymentAccountController');
+const adminEarningController = require('../../controllers/admin/adminEarningController');
+const adminInvestmentController = require('../../controllers/admin/adminInvestmentController');
+const adminReportController = require('../../controllers/admin/adminReportController');
+const adminAuditLogController = require('../../controllers/admin/adminAuditLogController');
+const adminSettingsController = require('../../controllers/admin/adminSettingsController');
+const adminNotificationController = require('../../controllers/admin/adminNotificationController');
+
+router.use(auth, adminMiddleware);
+
+// Dashboard
+router.get('/dashboard', adminDashboardController.getDashboardStats);
+router.get('/recent-activity', adminDashboardController.getRecentActivity);
+
+// Users
+router.get('/users', adminUserController.getUsers);
+router.get('/users/:id', adminUserController.getUserById);
+router.put('/users/:id', adminUserController.updateUser);
+router.put('/users/:id/suspend', adminUserController.suspendUser);
+router.put('/users/:id/activate', adminUserController.activateUser);
+
+// Deposits
+router.get('/deposits', adminDepositController.getAllDeposits);
+router.get('/deposits/:id', adminDepositController.getDepositById);
+router.put('/deposits/:id/approve', adminDepositController.approveDeposit);
+router.put('/deposits/:id/reject', adminDepositController.rejectDeposit);
+
+// Withdrawals
+router.get('/withdrawals', adminWithdrawalController.getAllWithdrawals);
+router.get('/withdrawals/:id', adminWithdrawalController.getWithdrawalById);
+router.put('/withdrawals/:id/approve', adminWithdrawalController.approveWithdrawal);
+router.put('/withdrawals/:id/reject', adminWithdrawalController.rejectWithdrawal);
+router.put('/withdrawals/:id/complete', adminWithdrawalController.completeWithdrawal);
+
+// Products
+router.get('/products', adminProductController.getAllProducts);
+router.post('/products', adminProductController.createProduct);
+router.put('/products/:id', adminProductController.updateProduct);
+router.delete('/products/:id', adminProductController.deleteProduct);
+router.put('/products/:id/toggle', adminProductController.toggleProductStatus);
+
+// Payment Accounts
+router.get('/payment-accounts', adminPaymentAccountController.getAllAccounts);
+router.post('/payment-accounts', adminPaymentAccountController.createAccount);
+router.put('/payment-accounts/:id', adminPaymentAccountController.updateAccount);
+router.put('/payment-accounts/:id/activate', adminPaymentAccountController.activateAccount);
+router.put('/payment-accounts/:id/deactivate', adminPaymentAccountController.deactivateAccount);
+router.get('/payment-accounts/switch-history', adminPaymentAccountController.getSwitchHistory);
+
+// Investments
+router.get('/investments', adminInvestmentController.getAllInvestments);
+
+// Earnings
+router.get('/earnings/schedules', adminEarningController.getEarningSchedules);
+router.get('/earnings', adminEarningController.getAllEarnings);
+router.post('/earnings/run-manual', adminEarningController.runManualEarning);
+
+// Reports
+router.get('/reports/transactions', adminReportController.getTransactionStats);
+router.get('/reports/deposits', adminReportController.getDepositReport);
+router.get('/reports/withdrawals', adminReportController.getWithdrawalReport);
+router.get('/reports/earnings', adminReportController.getEarningsReport);
+router.get('/reports/export', adminReportController.exportReport);
+
+// Audit Logs
+router.get('/audit-logs', adminAuditLogController.getAuditLogs);
+
+// Settings
+router.get('/settings', adminSettingsController.getSettings);
+router.put('/settings/:key', adminSettingsController.updateSetting);
+
+// Notifications
+router.get('/notifications/users', adminNotificationController.getUsersForNotification);
+router.post('/notifications/send', adminNotificationController.sendNotification);
+
+module.exports = router;
