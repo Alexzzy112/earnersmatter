@@ -18,6 +18,18 @@ const app = express();
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors({ origin: process.env.APP_URL || 'http://localhost:3000', credentials: true }));
 app.use(cookieParser());
+
+// Serve uploaded files before any sanitization (filename is a server-generated UUID, not user input)
+app.get('/api/uploads/:filename', (req, res) => {
+  const safeName = path.basename(req.params.filename);
+  const filePath = path.join(uploadsDir, safeName);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).json({ success: false, message: 'File not found' });
+  }
+});
+
 app.use(mongoSanitize());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -41,16 +53,6 @@ app.use((req, res, next) => {
   if (req.query) req.query = sanitizeValue(req.query);
   if (req.params) req.params = sanitizeValue(req.params);
   next();
-});
-
-// Serve uploaded files via API route (works on Vercel serverless)
-app.get('/api/uploads/:filename', (req, res) => {
-  const filePath = path.join(uploadsDir, req.params.filename);
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.status(404).json({ success: false, message: 'File not found' });
-  }
 });
 
 // Routes

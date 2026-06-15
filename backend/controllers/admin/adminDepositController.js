@@ -3,6 +3,7 @@ const User = require('../../models/User');
 const Transaction = require('../../models/Transaction');
 const Notification = require('../../models/Notification');
 const Referral = require('../../models/Referral');
+const Setting = require('../../models/Setting');
 const { paginate, generateReference } = require('../../utils/helpers');
 const { logAction } = require('../../utils/auditLogger');
 
@@ -72,11 +73,19 @@ exports.approveDeposit = async (req, res) => {
       { status: 'approved' }
     );
 
-    // Referral bonus: 30% of deposit to the referrer
+    // Referral bonus
     if (user.referredBy) {
       const referrer = await User.findById(user.referredBy);
       if (referrer) {
-        const bonusAmount = Math.round(deposit.amount * 0.3);
+        const [bonusSetting, typeSetting] = await Promise.all([
+          Setting.findOne({ key: 'referralBonus' }),
+          Setting.findOne({ key: 'bonusType' }),
+        ]);
+        const bonusType = typeSetting?.value || 'fixed';
+        const bonusValue = Number(bonusSetting?.value) || 1000;
+        const bonusAmount = bonusType === 'percentage'
+          ? Math.round(deposit.amount * (bonusValue / 100))
+          : Math.round(bonusValue);
         referrer.walletBalance += bonusAmount;
         referrer.referralEarnings += bonusAmount;
         await referrer.save();

@@ -85,9 +85,15 @@ const purchaseProduct = async (req, res) => {
     if (user.referredBy) {
       const referrer = await User.findById(user.referredBy);
       if (referrer) {
-        const setting = await Setting.findOne({ key: 'referralBonus' });
-        const bonusPercentage = setting && setting.value ? Number(setting.value) / 100 : 0.3;
-        const bonusAmount = Math.round(totalCost * bonusPercentage);
+        const [bonusSetting, typeSetting] = await Promise.all([
+          Setting.findOne({ key: 'referralBonus' }),
+          Setting.findOne({ key: 'bonusType' }),
+        ]);
+        const bonusType = typeSetting?.value || 'fixed';
+        const bonusValue = Number(bonusSetting?.value) || 1000;
+        const bonusAmount = bonusType === 'percentage'
+          ? Math.round(totalCost * (bonusValue / 100))
+          : Math.round(bonusValue);
         if (bonusAmount > 0) {
           referrer.walletBalance += bonusAmount;
           referrer.referralEarnings += bonusAmount;
