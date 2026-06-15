@@ -98,7 +98,48 @@ export default function UserDashboard() {
 
   return (
     <DashboardLayout>
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+        .marquee-track {
+          overflow: hidden;
+          white-space: nowrap;
+          position: relative;
+        }
+        .marquee-content {
+          display: inline-block;
+          animation: marquee 30s linear infinite;
+          padding-left: 100%;
+        }
+      `}</style>
+
       <div className="space-y-6">
+        {/* Fake Withdrawal Marquee */}
+        <div className="marquee-track bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg py-2 px-4 text-sm text-success-700 dark:text-success-300">
+          <div className="marquee-content">
+            {[
+              'Chisom O. withdrew ₦15,000 • 2 mins ago',
+              'Emeka N. withdrew ₦25,500 • 5 mins ago',
+              'Aisha B. withdrew ₦10,000 • 8 mins ago',
+              'David A. withdrew ₦50,000 • 12 mins ago',
+              'Grace E. withdrew ₦8,500 • 18 mins ago',
+              'Samuel K. withdrew ₦35,000 • 22 mins ago',
+              'Blessing W. withdrew ₦20,000 • 30 mins ago',
+              'Michael T. withdrew ₦45,000 • 35 mins ago',
+              'Jennifer D. withdrew ₦12,000 • 40 mins ago',
+              'Patrick O. withdrew ₦60,000 • 48 mins ago',
+              'Ngozi F. withdrew ₦18,500 • 52 mins ago',
+              'Ibrahim S. withdrew ₦30,000 • 1 hour ago',
+              'Funke A. withdrew ₦22,000 • 1 hour ago',
+              'Tunde R. withdrew ₦40,000 • 1 hour ago',
+              'Esther M. withdrew ₦16,000 • 2 hours ago',
+              'Kehinde J. withdrew ₦55,000 • 2 hours ago',
+            ].join('  •  ')}
+          </div>
+        </div>
+
         <div>
           <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Dashboard</h1>
           <p className="text-dark-400 text-sm mt-1">Welcome back, {data?.user?.username || 'Investor'}!</p>

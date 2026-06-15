@@ -7,7 +7,6 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const EarningSchedule = require('../models/EarningSchedule');
 const Notification = require('../models/Notification');
-const Referral = require('../models/Referral');
 const Setting = require('../models/Setting');
 const AuditLog = require('../models/AuditLog');
 const { generateReference } = require('../utils/helpers');
@@ -44,33 +43,6 @@ const processDailyEarnings = async () => {
         user.walletBalance += dailyEarnings;
         user.totalEarnings += dailyEarnings;
         await user.save();
-
-        // Check for referral bonus (first earning only)
-        if (investment.earningsReceived === 0) {
-          const user_ = await User.findById(investment.userId).populate('referredBy');
-          if (user_.referredBy) {
-            const bonusAmount = Math.round(investment.totalCost * 0.3);
-            user_.referredBy.walletBalance += bonusAmount;
-            user_.referredBy.referralEarnings += bonusAmount;
-            await user_.referredBy.save();
-
-            await Transaction.create({
-              userId: user_.referredBy._id,
-              type: 'referral_bonus',
-              amount: bonusAmount,
-              balanceBefore: user_.referredBy.walletBalance - bonusAmount,
-              balanceAfter: user_.referredBy.walletBalance,
-              description: `Referral bonus for ${user_.username}'s first investment`,
-              reference: generateReference(),
-              status: 'completed'
-            });
-
-            await Referral.findOneAndUpdate(
-              { referrerId: user_.referredBy._id, referredUserId: user_._id },
-              { bonusAmount, status: 'paid' }
-            );
-          }
-        }
 
         investment.earningsReceived += dailyEarnings;
         investment.lastEarningAt = now;

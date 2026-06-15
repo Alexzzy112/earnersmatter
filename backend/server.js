@@ -53,7 +53,15 @@ try {
 } catch (e) {
   console.error('Failed to create uploads directory:', e.message);
 }
-app.use('/uploads', express.static(uploadsDir));
+// Serve uploaded files via API route (works on Vercel serverless)
+app.get('/api/uploads/:filename', (req, res) => {
+  const filePath = path.join(uploadsDir, req.params.filename);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).json({ success: false, message: 'File not found' });
+  }
+});
 
 // Routes
 app.use('/api', routes);

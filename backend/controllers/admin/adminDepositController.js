@@ -2,6 +2,7 @@ const Deposit = require('../../models/Deposit');
 const User = require('../../models/User');
 const Transaction = require('../../models/Transaction');
 const Notification = require('../../models/Notification');
+const Referral = require('../../models/Referral');
 const { paginate, generateReference } = require('../../utils/helpers');
 const { logAction } = require('../../utils/auditLogger');
 
@@ -70,6 +71,41 @@ exports.approveDeposit = async (req, res) => {
       { reference: deposit.transactionReference },
       { status: 'approved' }
     );
+
+    // Referral bonus: 30% of deposit to the referrer
+    if (user.referredBy) {
+      const referrer = await User.findById(user.referredBy);
+      if (referrer) {
+        const bonusAmount = Math.round(deposit.amount * 0.3);
+        referrer.walletBalance += bonusAmount;
+        referrer.referralEarnings += bonusAmount;
+        await referrer.save();
+
+        await Transaction.create({
+          userId: referrer._id,
+          type: 'referral_bonus',
+          amount: bonusAmount,
+          balanceBefore: referrer.walletBalance - bonusAmount,
+          balanceAfter: referrer.walletBalance,
+          description: `Referral bonus for ${user.username}'s deposit of ₦${deposit.amount.toLocaleString()}`,
+          reference: generateReference(),
+          status: 'completed',
+        });
+
+        await Notification.create({
+          userId: referrer._id,
+          type: 'referral_bonus',
+          title: 'Referral Bonus Credited',
+          message: `You earned ₦${bonusAmount.toLocaleString()} referral bonus from ${user.username}'s deposit`,
+        });
+
+        await Referral.findOneAndUpdate(
+          { referrerId: referrer._id, referredUserId: user._id },
+          { bonusAmount, status: 'paid' },
+          { upsert: true }
+        );
+      }
+    }
 
     await logAction({
       userId: req.user._id,
