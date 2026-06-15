@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { adminAPI } from '@/lib/api';
+import { adminAPI, uploadsBase } from '@/lib/api';
 import AdminLayout from '@/components/layout/AdminLayout';
 import Modal from '@/components/shared/Modal';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -134,7 +134,7 @@ export default function AdminDeposits() {
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{dep.paymentAccountId?.accountName || dep.accountName || '—'}</td>
                       <td className="px-4 py-3">
                         {dep.paymentProof ? (
-                          <button onClick={() => setProofModal(`/uploads/${dep.paymentProof}`)}
+                          <button onClick={() => setProofModal(`${uploadsBase}/${dep.paymentProof}`)}
                             className="p-1.5 rounded-lg text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20" title="View proof">
                             <FiImage className="w-4 h-4" />
                           </button>
