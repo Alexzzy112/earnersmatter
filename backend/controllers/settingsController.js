@@ -16,7 +16,7 @@ const getDepositSettings = async (req, res) => {
 
 const getContactSettings = async (req, res) => {
   try {
-    const keys = ['contactTelegram', 'siteName', 'siteDescription'];
+    const keys = ['contactTelegramChannel', 'contactTelegramAdmin', 'siteName', 'siteDescription'];
     const settings = await Setting.find({ key: { $in: keys } });
     const data = {};
     for (const s of settings) {

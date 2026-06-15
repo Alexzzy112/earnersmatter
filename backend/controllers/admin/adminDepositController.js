@@ -14,7 +14,7 @@ exports.getAllDeposits = async (req, res) => {
     if (status) filter.status = status;
 
     const [deposits, total] = await Promise.all([
-      Deposit.find(filter).populate('userId', 'username email').sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+      Deposit.find(filter).populate('userId', 'username email').populate('paymentAccountId').sort({ createdAt: -1 }).skip(skip).limit(limitNum),
       Deposit.countDocuments(filter),
     ]);
 
@@ -84,7 +84,7 @@ exports.approveDeposit = async (req, res) => {
       userId: deposit.userId,
       type: 'deposit',
       title: 'Deposit Approved',
-      message: `Your deposit of $${deposit.amount.toFixed(2)} has been approved`,
+      message: `Your deposit of ₦${deposit.amount.toLocaleString()} has been approved`,
     });
 
     res.status(200).json({ success: true, data: deposit });
@@ -131,8 +131,8 @@ exports.rejectDeposit = async (req, res) => {
       type: 'deposit',
       title: 'Deposit Rejected',
       message: adminNote
-        ? `Your deposit of $${deposit.amount.toFixed(2)} has been rejected: ${adminNote}`
-        : `Your deposit of $${deposit.amount.toFixed(2)} has been rejected`,
+        ? `Your deposit of ₦${deposit.amount.toLocaleString()} has been rejected: ${adminNote}`
+        : `Your deposit of ₦${deposit.amount.toLocaleString()} has been rejected`,
     });
 
     res.status(200).json({ success: true, data: deposit });

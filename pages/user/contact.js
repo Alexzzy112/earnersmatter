@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { contactAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { FiMessageCircle, FiMail, FiRefreshCw, FiSend } from 'react-icons/fi';
+import { FiMessageCircle, FiMail, FiRefreshCw, FiSend, FiUsers } from 'react-icons/fi';
 
 export default function ContactPage() {
   const [data, setData] = useState(null);
@@ -36,7 +36,8 @@ export default function ContactPage() {
     </DashboardLayout>
   );
 
-  const telegramLink = data?.contactTelegram || 'https://t.me/earnersmatter';
+  const telegramChannel = data?.contactTelegramChannel || 'https://t.me/earnersmatter';
+  const telegramAdmin = data?.contactTelegramAdmin || 'https://t.me/earnersmatter_admin';
 
   return (
     <DashboardLayout>
@@ -49,29 +50,49 @@ export default function ContactPage() {
         <div className="card p-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-14 h-14 rounded-xl bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-              <FiMessageCircle size={28} className="text-sky-600 dark:text-sky-400" />
+              <FiUsers size={28} className="text-sky-600 dark:text-sky-400" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-dark-900 dark:text-white">Telegram</h2>
-              <p className="text-sm text-dark-400">Reach us directly on Telegram</p>
+              <h2 className="text-lg font-semibold text-dark-900 dark:text-white">Telegram Channel</h2>
+              <p className="text-sm text-dark-400">Join our channel for updates</p>
             </div>
           </div>
-
           <a
-            href={telegramLink}
+            href={telegramChannel}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary w-full flex items-center justify-center gap-2"
           >
             <FiSend size={16} />
-            Message on Telegram
+            Join Telegram Channel
+          </a>
+        </div>
+
+        <div className="card p-6">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+              <FiMessageCircle size={28} className="text-primary-600 dark:text-primary-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-dark-900 dark:text-white">Admin Account</h2>
+              <p className="text-sm text-dark-400">Message the admin directly</p>
+            </div>
+          </div>
+          <a
+            href={telegramAdmin}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary w-full flex items-center justify-center gap-2"
+          >
+            <FiSend size={16} />
+            Message Admin on Telegram
           </a>
         </div>
 
         <div className="card p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-14 h-14 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-              <FiMail size={28} className="text-primary-600 dark:text-primary-400" />
+            <div className="w-14 h-14 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <FiMail size={28} className="text-amber-600 dark:text-amber-400" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-dark-900 dark:text-white">Email</h2>

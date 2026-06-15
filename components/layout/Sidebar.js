@@ -34,7 +34,6 @@ const adminLinks = [
   { href: '/admin/reports', label: 'Reports', icon: FiPieChart },
   { href: '/admin/notifications', label: 'Send Notification', icon: FiBell },
   { href: '/admin/profile', label: 'Profile', icon: FiUser },
-  { href: '/user/contact', label: 'Contact', icon: FiMessageCircle },
   { href: '/admin/settings', label: 'Settings', icon: FiSettings },
   { href: '/admin/audit-logs', label: 'Audit Logs', icon: FiShield },
 ];
