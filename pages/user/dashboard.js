@@ -28,6 +28,10 @@ export default function UserDashboard() {
   const [balance, setBalance] = useState(0);
   const [countdown, setCountdown] = useState('');
 
+  const d = data || {};
+  const recentTransactions = d.recentTransactions || [];
+  const recentInvestments = d.recentInvestments || d.investments || [];
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -37,7 +41,7 @@ export default function UserDashboard() {
           investmentAPI.getAll({ limit: 5, status: 'active' }),
         ]);
         const dashData = dashRes.data || dashRes;
-        dashData.recentInvestments = invRes.data || invRes || [];
+        dashData.recentInvestments = invRes?.data ?? invRes ?? [];
         setData(dashData);
         setBalance(balanceRes.data?.walletBalance || balanceRes?.walletBalance || 0);
       } catch (err) {
@@ -52,6 +56,7 @@ export default function UserDashboard() {
   useEffect(() => {
     if (!recentInvestments?.length) return;
     const nextEarning = new Date(recentInvestments[0].nextEarningAt);
+    if (isNaN(nextEarning.getTime())) return;
 
     const timer = setInterval(() => {
       const now = new Date();
@@ -69,7 +74,7 @@ export default function UserDashboard() {
     return () => clearInterval(timer);
   }, [recentInvestments]);
 
-  if (loading) return <DashboardLayout><LoadingSpinner text="Loading dashboard..." /></DashboardLayout>;
+  if (loading) return <DashboardLayout><LoadingSpinner /></DashboardLayout>;
   if (error) return (
     <DashboardLayout>
       <div className="text-center py-16">
@@ -81,18 +86,14 @@ export default function UserDashboard() {
     </DashboardLayout>
   );
 
-  const d = data || {};
-  const recentTransactions = d.recentTransactions || [];
-  const recentInvestments = d.recentInvestments || d.investments || [];
-
   const stats = [
-    { label: 'Wallet Balance', value: `₦${Number(balance).toLocaleString()}`, icon: <FiDollarSign />, color: 'primary' },
-    { label: 'Total Deposits', value: `₦${Number(d.totalDeposits).toLocaleString()}`, icon: <FiArrowUpRight />, color: 'success' },
-    { label: 'Total Withdrawals', value: `₦${Number(d.totalWithdrawals).toLocaleString()}`, icon: <FiRefreshCw />, color: 'danger' },
-    { label: 'Total Investments', value: `₦${Number(d.totalInvestments).toLocaleString()}`, icon: <FiBriefcase />, color: 'warning' },
-    { label: 'Total Earnings', value: `₦${Number(d.totalEarnings).toLocaleString()}`, icon: <FiTrendingUp />, color: 'success' },
-    { label: 'Active Products', value: d.activeInvestments ?? 0, icon: <FiPackage />, color: 'dark' },
-    { label: 'Completed Products', value: d.completedInvestments ?? 0, icon: <FiCheckCircle />, color: 'green' },
+    { title: 'Wallet Balance', value: `₦${Number(balance).toLocaleString()}`, icon: <FiDollarSign />, color: 'blue' },
+    { title: 'Total Deposits', value: `₦${Number(d.totalDeposits).toLocaleString()}`, icon: <FiArrowUpRight />, color: 'green' },
+    { title: 'Total Withdrawals', value: `₦${Number(d.totalWithdrawals).toLocaleString()}`, icon: <FiRefreshCw />, color: 'red' },
+    { title: 'Total Investments', value: `₦${Number(d.totalInvestments).toLocaleString()}`, icon: <FiBriefcase />, color: 'yellow' },
+    { title: 'Total Earnings', value: `₦${Number(d.totalEarnings).toLocaleString()}`, icon: <FiTrendingUp />, color: 'green' },
+    { title: 'Active Products', value: d.activeInvestments ?? 0, icon: <FiPackage />, color: 'purple' },
+    { title: 'Completed Products', value: d.completedInvestments ?? 0, icon: <FiCheckCircle />, color: 'green' },
   ];
 
   return (
@@ -163,7 +164,7 @@ export default function UserDashboard() {
                     {recentTransactions.slice(0, 5).map((tx) => (
                       <tr key={tx._id}>
                         <td className="text-xs text-dark-400 whitespace-nowrap">
-                          {new Date(tx.createdAt || tx.date).toLocaleDateString()}
+                          {new Date(tx.createdAt ?? tx.date).toLocaleDateString()}
                         </td>
                         <td className="capitalize">{tx.type}</td>
                         <td className={tx.type === 'withdrawal' ? 'text-danger-500' : 'text-success-500'}>
