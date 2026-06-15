@@ -6,6 +6,14 @@ const Investment = require('../models/Investment');
 const Notification = require('../models/Notification');
 const helpers = require('../utils/helpers');
 
+const TASKS_PER_DAY = 4;
+
+const getPerTaskReward = async (userId) => {
+  const investments = await Investment.find({ userId, status: 'active' });
+  const totalDailyEarnings = investments.reduce((sum, inv) => sum + (inv.dailyEarnings || 0), 0);
+  return Math.round(totalDailyEarnings / TASKS_PER_DAY);
+};
+
 const getTodayTasks = async (req, res) => {
   try {
     const today = new Date();
@@ -27,13 +35,15 @@ const getTodayTasks = async (req, res) => {
 
     const completedSet = new Set(completedIds.map((id) => id.toString()));
 
+    const reward = hasInvestment ? await getPerTaskReward(req.user._id) : 0;
+
     const data = tasks.map((task) => ({
       _id: task._id,
       title: task.title,
       description: task.description,
       imageUrl: task.imageUrl,
       linkUrl: task.linkUrl,
-      reward: task.reward,
+      reward,
       type: task.type,
       completed: completedSet.has(task._id.toString()),
     }));
@@ -44,7 +54,7 @@ const getTodayTasks = async (req, res) => {
       meta: {
         total: tasks.length,
         completed: completedIds.length,
-        canEarn: hasInvestment ? tasks.length * 500 : 0,
+        canEarn: hasInvestment ? TASKS_PER_DAY * reward : 0,
         locked: !hasInvestment,
       },
     });
@@ -78,17 +88,19 @@ const completeTask = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const reward = await getPerTaskReward(req.user._id);
+
     const user = await User.findById(req.user._id);
     const balanceBefore = user.walletBalance;
 
-    user.walletBalance += task.reward;
-    user.totalEarnings += task.reward;
+    user.walletBalance += reward;
+    user.totalEarnings += reward;
     await user.save();
 
     await UserTask.create({
       userId: req.user._id,
       taskId: task._id,
-      reward: task.reward,
+      reward,
       completedAt: new Date(),
       forDate: today,
     });
@@ -96,7 +108,7 @@ const completeTask = async (req, res) => {
     await Transaction.create({
       userId: req.user._id,
       type: 'earning',
-      amount: task.reward,
+      amount: reward,
       balanceBefore,
       balanceAfter: user.walletBalance,
       description: `Task reward: ${task.title}`,
@@ -108,13 +120,13 @@ const completeTask = async (req, res) => {
       userId: req.user._id,
       type: 'earning_credited',
       title: 'Task Reward Credited',
-      message: `You earned ₦${task.reward.toLocaleString()} for completing: ${task.title}`,
+      message: `You earned ₦${reward.toLocaleString()} for completing: ${task.title}`,
     });
 
     res.status(200).json({
       success: true,
       message: 'Task completed! Reward credited to your wallet.',
-      data: { reward: task.reward, balance: user.walletBalance },
+      data: { reward, balance: user.walletBalance },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

@@ -3,15 +3,9 @@ const Task = require('../models/Task');
 
 const adTemplates = [
   { title: 'Sponsored: Earn More Today', description: 'Check out this exclusive investment opportunity and grow your portfolio faster.', type: 'ad' },
-  { title: 'Ad: Premium Investment Plans', description: 'Unlock higher returns with our premium investment tiers. Limited slots available!', type: 'ad' },
   { title: 'Watch & Earn: Platform Tutorial', description: 'Watch our quick tutorial on maximizing your daily earnings.', type: 'watch' },
-  { title: 'Sponsored: Refer & Earn More', description: 'Share your referral link and earn bonuses on every referral deposit.', type: 'ad' },
   { title: 'Click & Earn: Market Update', description: 'Click to view today\'s market update and stay informed about your investments.', type: 'click' },
-  { title: 'Ad: New Products Available', description: 'New investment products just launched. Be the first to invest!', type: 'ad' },
-  { title: 'Watch & Earn: Success Stories', description: 'Watch how our top investors are maximizing their daily returns.', type: 'watch' },
   { title: 'Sponsored: Daily Tips', description: 'Read our daily investment tips to make smarter decisions.', type: 'click' },
-  { title: 'Ad: Limited Time Offer', description: 'Bonus rewards for all investments made this week. Don\'t miss out!', type: 'ad' },
-  { title: 'Watch & Earn: Platform Features', description: 'Watch a short video on new platform features to earn your reward.', type: 'watch' },
 ];
 
 const generateDailyTasks = async () => {
