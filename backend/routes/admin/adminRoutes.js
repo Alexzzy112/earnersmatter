@@ -15,6 +15,7 @@ const adminReportController = require('../../controllers/admin/adminReportContro
 const adminAuditLogController = require('../../controllers/admin/adminAuditLogController');
 const adminSettingsController = require('../../controllers/admin/adminSettingsController');
 const adminNotificationController = require('../../controllers/admin/adminNotificationController');
+const adminTaskController = require('../../controllers/admin/adminTaskController');
 
 router.use(auth, adminMiddleware);
 
@@ -85,5 +86,12 @@ router.put('/settings/:key', adminSettingsController.updateSetting);
 // Notifications
 router.get('/notifications/users', adminNotificationController.getUsersForNotification);
 router.post('/notifications/send', adminNotificationController.sendNotification);
+
+// Tasks
+router.get('/tasks', adminTaskController.getAllTasks);
+router.post('/tasks', adminTaskController.createTask);
+router.put('/tasks/:id', adminTaskController.updateTask);
+router.delete('/tasks/:id', adminTaskController.deleteTask);
+router.post('/tasks/generate', adminTaskController.generateTasks);
 
 module.exports = router;

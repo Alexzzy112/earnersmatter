@@ -11,6 +11,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const connectDB = require('./config/db');
 const routes = require('./routes');
 const uploadsDir = require('./config/upload');
+require('./cron/tasks');
 
 const app = express();
 
