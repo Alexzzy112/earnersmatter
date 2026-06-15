@@ -82,9 +82,16 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Connect DB and start server
-connectDB().then(() => {
-  app.listen(process.env.PORT || 5000, () => {
-    console.log(`Server running on port ${process.env.PORT || 5000}`);
+// Connect DB
+connectDB().catch(console.error);
+
+// Start server only when run directly (not on Vercel)
+if (!process.env.VERCEL) {
+  connectDB().then(() => {
+    app.listen(process.env.PORT || 5000, () => {
+      console.log(`Server running on port ${process.env.PORT || 5000}`);
+    });
   });
-});
+}
+
+module.exports = app;
