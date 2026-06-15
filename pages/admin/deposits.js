@@ -129,7 +129,7 @@ export default function AdminDeposits() {
                   deposits.map((dep) => (
                     <tr key={dep._id} className="hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
                       <td className="px-4 py-3 text-sm font-mono text-gray-500 dark:text-gray-400">#{dep._id?.slice(-6)}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{dep.user?.username || dep.user?.email || dep.userId || 'Unknown'}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{dep.userId?.username || dep.userId?.email || 'Unknown'}</td>
                       <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">₦{(dep.amount || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{dep.paymentAccountId?.accountName || dep.accountName || '—'}</td>
                       <td className="px-4 py-3">

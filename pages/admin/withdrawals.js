@@ -114,10 +114,10 @@ export default function AdminWithdrawals() {
                   withdrawals.map((wd) => (
                     <tr key={wd._id} className="hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
                       <td className="px-4 py-3 text-sm font-mono text-gray-500 dark:text-gray-400">#{wd._id?.slice(-6)}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{wd.user?.username || wd.user?.email || wd.userId || 'Unknown'}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">${(wd.amount || 0).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">${(wd.charge || 0).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">${(wd.netAmount || wd.amount || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{wd.userId?.username || wd.userId?.email || 'Unknown'}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">₦{(wd.amount || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">₦{(wd.charge || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">₦{(wd.netAmount || wd.amount || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{wd.method || wd.paymentMethod || '—'}</td>
                       <td className="px-4 py-3"><StatusBadge status={wd.status} /></td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{wd.createdAt ? new Date(wd.createdAt).toLocaleString() : '—'}</td>
