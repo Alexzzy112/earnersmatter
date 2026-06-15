@@ -2,12 +2,7 @@ const Product = require('../models/Product');
 
 const getProducts = async (req, res) => {
   try {
-    const filter = {};
-    if (!req.user || req.user.role !== 'admin') {
-      filter.status = 'active';
-    }
-
-    const products = await Product.find(filter).sort({ price: 1 });
+    const products = await Product.find({}).sort({ price: 1 });
 
     res.status(200).json({ success: true, data: products });
   } catch (error) {

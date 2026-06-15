@@ -101,6 +101,11 @@ export default function ProductsPage() {
                 <div className="absolute top-3 left-3 z-10 w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs font-bold shadow-lg">
                   {idx + 1}
                 </div>
+                {product.status === 'inactive' && (
+                  <div className="absolute top-3 right-3 z-10 px-2 py-1 rounded-md bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-semibold">
+                    Inactive
+                  </div>
+                )}
                 {product.image ? (
                   <div className="w-full h-48 rounded-xl overflow-hidden mb-4 bg-dark-50 dark:bg-dark-800 flex items-center justify-center">
                     <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
@@ -134,9 +139,10 @@ export default function ProductsPage() {
 
                 <button
                   onClick={() => openModal(product)}
-                  className="btn-primary w-full"
+                  disabled={product.status === 'inactive'}
+                  className={"btn-primary w-full " + (product.status === 'inactive' ? 'opacity-50 cursor-not-allowed' : '')}
                 >
-                  <FiTrendingUp size={16} /> Invest Now
+                  <FiTrendingUp size={16} /> {product.status === 'inactive' ? 'Unavailable' : 'Invest Now'}
                 </button>
               </div>
             ))}

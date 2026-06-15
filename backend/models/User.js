@@ -69,7 +69,7 @@ const userSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ['active', 'suspended', 'pending'],
-      default: 'pending',
+      default: 'active',
     },
     emailVerifiedAt: {
       type: Date,
