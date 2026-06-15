@@ -3,6 +3,8 @@ const Product = require('../models/Product');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const Referral = require('../models/Referral');
+const Setting = require('../models/Setting');
 const helpers = require('../utils/helpers');
 const { logAction } = require('../utils/auditLogger');
 
@@ -78,6 +80,45 @@ const purchaseProduct = async (req, res) => {
       title: 'Product Purchased',
       message: `You have successfully purchased ${product.name}${quantity > 1 ? ` (x${quantity})` : ''} for $${(product.price * quantity).toFixed(2)}.`
     });
+
+    // Referral bonus on product purchase
+    if (user.referredBy) {
+      const referrer = await User.findById(user.referredBy);
+      if (referrer) {
+        const setting = await Setting.findOne({ key: 'referralBonus' });
+        const bonusPercentage = setting && setting.value ? Number(setting.value) / 100 : 0.3;
+        const bonusAmount = Math.round(totalCost * bonusPercentage);
+        if (bonusAmount > 0) {
+          referrer.walletBalance += bonusAmount;
+          referrer.referralEarnings += bonusAmount;
+          await referrer.save();
+
+          await Transaction.create({
+            userId: referrer._id,
+            type: 'referral_bonus',
+            amount: bonusAmount,
+            balanceBefore: referrer.walletBalance - bonusAmount,
+            balanceAfter: referrer.walletBalance,
+            description: `Referral bonus for ${user.username}'s purchase of ${product.name}`,
+            reference: helpers.generateReference(),
+            status: 'completed',
+          });
+
+          await Notification.create({
+            userId: referrer._id,
+            type: 'referral_bonus',
+            title: 'Referral Bonus Credited',
+            message: `You earned ₦${bonusAmount.toLocaleString()} referral bonus from ${user.username}'s purchase`,
+          });
+
+          await Referral.findOneAndUpdate(
+            { referrerId: referrer._id, referredUserId: user._id },
+            { bonusAmount, status: 'paid' },
+            { upsert: true }
+          );
+        }
+      }
+    }
 
     res.status(201).json({
       success: true,

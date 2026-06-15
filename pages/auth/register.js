@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -28,6 +28,14 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [verificationPending, setVerificationPending] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setForm((prev) => ({ ...prev, referralCode: ref }));
+    }
+  }, []);
 
   if (authLoading) return null;
   if (user) {
