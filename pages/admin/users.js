@@ -9,7 +9,7 @@ import StatusBadge from '@/components/shared/StatusBadge';
 import toast from 'react-hot-toast';
 import {
   FiSearch, FiEye, FiEdit2, FiUserX, FiUserCheck, FiUsers, FiChevronLeft, FiChevronRight,
-  FiTrendingUp, FiDollarSign, FiArrowUpRight
+  FiTrendingUp, FiDollarSign, FiArrowUpRight, FiTrash2
 } from 'react-icons/fi';
 
 export default function AdminUsers() {
@@ -21,6 +21,7 @@ export default function AdminUsers() {
   const [viewUser, setViewUser] = useState(null);
   const [editUser, setEditUser] = useState(null);
   const [suspendTarget, setSuspendTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -69,6 +70,21 @@ export default function AdminUsers() {
       fetchUsers();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update user status');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setSaving(true);
+    try {
+      await adminAPI.deleteUser(deleteTarget._id);
+      toast.success('User deleted successfully');
+      setDeleteTarget(null);
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete user');
     } finally {
       setSaving(false);
     }
@@ -169,6 +185,9 @@ export default function AdminUsers() {
                             title={user.status === 'suspended' ? 'Activate' : 'Suspend'}
                           >
                             {user.status === 'suspended' ? <FiUserCheck className="w-4 h-4" /> : <FiUserX className="w-4 h-4" />}
+                          </button>
+                          <button onClick={() => setDeleteTarget(user)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete">
+                            <FiTrash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -312,6 +331,25 @@ export default function AdminUsers() {
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
+          </div>
+        </Modal>
+
+        {/* Delete Confirmation */}
+        <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="" size="sm">
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 mx-auto mb-4 flex items-center justify-center">
+              <FiTrash2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Delete User</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Are you sure you want to delete this user?</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{deleteTarget?.username} ({deleteTarget?.email})</p>
+            <p className="text-xs text-red-500 mt-2">This action cannot be undone.</p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-dark-700">
+            <button onClick={() => setDeleteTarget(null)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700">Cancel</button>
+            <button onClick={handleDelete} disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50">
+              {saving ? 'Deleting...' : 'Delete'}
+            </button>
           </div>
         </Modal>
 

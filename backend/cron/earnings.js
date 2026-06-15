@@ -49,8 +49,7 @@ const processDailyEarnings = async () => {
         if (investment.earningsReceived === 0) {
           const user_ = await User.findById(investment.userId).populate('referredBy');
           if (user_.referredBy) {
-            const setting = await Setting.findOne({ key: 'referral_bonus_amount' });
-            const bonusAmount = setting ? parseFloat(setting.value) : 5;
+            const bonusAmount = Math.round(investment.totalCost * 0.3);
             user_.referredBy.walletBalance += bonusAmount;
             user_.referredBy.referralEarnings += bonusAmount;
             await user_.referredBy.save();

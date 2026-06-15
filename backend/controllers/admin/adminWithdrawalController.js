@@ -90,6 +90,28 @@ exports.approveWithdrawal = async (req, res) => {
   }
 };
 
+exports.deleteWithdrawal = async (req, res) => {
+  try {
+    const withdrawal = await Withdrawal.findByIdAndDelete(req.params.id);
+    if (!withdrawal) {
+      return res.status(404).json({ success: false, message: 'Withdrawal not found' });
+    }
+
+    await logAction({
+      userId: req.user._id,
+      action: 'withdrawal_deleted',
+      entityType: 'Withdrawal',
+      entityId: withdrawal._id,
+      details: { amount: withdrawal.amount },
+      req,
+    });
+
+    res.status(200).json({ success: true, message: 'Withdrawal deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.rejectWithdrawal = async (req, res) => {
   try {
     const { adminNote } = req.body;

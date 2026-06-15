@@ -8,7 +8,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import StatusBadge from '@/components/shared/StatusBadge';
 import toast from 'react-hot-toast';
 import {
-  FiArrowUpRight, FiCheck, FiX, FiSearch, FiChevronLeft, FiChevronRight, FiSend
+  FiArrowUpRight, FiCheck, FiX, FiSearch, FiChevronLeft, FiChevronRight, FiSend, FiTrash2
 } from 'react-icons/fi';
 
 const statusFilters = ['all', 'pending', 'approved', 'rejected', 'completed'];
@@ -24,6 +24,7 @@ export default function AdminWithdrawals() {
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectNote, setRejectNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchWithdrawals = useCallback(async () => {
     setLoading(true);
@@ -58,6 +59,21 @@ export default function AdminWithdrawals() {
     } catch (err) {
       toast.error(err.response?.data?.message || `Failed to ${action} withdrawal`);
     } finally { setSaving(false); }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setSaving(true);
+    try {
+      await adminAPI.deleteWithdrawal(deleteTarget._id);
+      toast.success('Withdrawal deleted');
+      setDeleteTarget(null);
+      fetchWithdrawals();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete withdrawal');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -141,6 +157,9 @@ export default function AdminWithdrawals() {
                           {['completed', 'rejected'].includes(wd.status) && (
                             <span className="text-xs text-gray-400">{wd.processedAt ? new Date(wd.processedAt).toLocaleDateString() : 'Done'}</span>
                           )}
+                          <button onClick={() => setDeleteTarget(wd)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete">
+                            <FiTrash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -184,6 +203,25 @@ export default function AdminWithdrawals() {
             <button onClick={() => handleAction(confirmAction.id, confirmAction.action)} disabled={saving}
               className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50">
               {saving ? 'Processing...' : `Yes, ${confirmAction?.action}`}
+            </button>
+          </div>
+        </Modal>
+
+        {/* Delete Confirmation */}
+        <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="" size="sm">
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 mx-auto mb-4 flex items-center justify-center">
+              <FiTrash2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Delete Withdrawal</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Are you sure you want to delete this withdrawal record?</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">₦{(deleteTarget?.amount || 0).toLocaleString()} — {deleteTarget?.userId?.username || 'Unknown'}</p>
+            <p className="text-xs text-red-500 mt-2">This action cannot be undone.</p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-dark-700">
+            <button onClick={() => setDeleteTarget(null)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700">Cancel</button>
+            <button onClick={handleDelete} disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50">
+              {saving ? 'Deleting...' : 'Delete'}
             </button>
           </div>
         </Modal>

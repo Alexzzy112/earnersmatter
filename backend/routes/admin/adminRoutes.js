@@ -28,12 +28,14 @@ router.get('/users/:id', adminUserController.getUserById);
 router.put('/users/:id', adminUserController.updateUser);
 router.put('/users/:id/suspend', adminUserController.suspendUser);
 router.put('/users/:id/activate', adminUserController.activateUser);
+router.delete('/users/:id', adminUserController.deleteUser);
 
 // Deposits
 router.get('/deposits', adminDepositController.getAllDeposits);
 router.get('/deposits/:id', adminDepositController.getDepositById);
 router.put('/deposits/:id/approve', adminDepositController.approveDeposit);
 router.put('/deposits/:id/reject', adminDepositController.rejectDeposit);
+router.delete('/deposits/:id', adminDepositController.deleteDeposit);
 
 // Withdrawals
 router.get('/withdrawals', adminWithdrawalController.getAllWithdrawals);
@@ -41,6 +43,7 @@ router.get('/withdrawals/:id', adminWithdrawalController.getWithdrawalById);
 router.put('/withdrawals/:id/approve', adminWithdrawalController.approveWithdrawal);
 router.put('/withdrawals/:id/reject', adminWithdrawalController.rejectWithdrawal);
 router.put('/withdrawals/:id/complete', adminWithdrawalController.completeWithdrawal);
+router.delete('/withdrawals/:id', adminWithdrawalController.deleteWithdrawal);
 
 // Products
 router.get('/products', adminProductController.getAllProducts);

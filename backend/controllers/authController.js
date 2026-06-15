@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const Transaction = require('../models/Transaction');
+const Notification = require('../models/Notification');
 const PasswordReset = require('../models/PasswordReset');
 const bcrypt = require('bcryptjs');
 const helpers = require('../utils/helpers');
@@ -34,6 +36,30 @@ const register = async (req, res) => {
     }
 
     const user = await User.create(userData);
+
+    // Welcome bonus
+    const welcomeBonus = 700;
+    user.walletBalance += welcomeBonus;
+    await user.save();
+
+    await Transaction.create({
+      userId: user._id,
+      type: 'bonus',
+      amount: welcomeBonus,
+      balanceBefore: 0,
+      balanceAfter: welcomeBonus,
+      description: 'Welcome bonus',
+      reference: helpers.generateReference(),
+      status: 'completed',
+    });
+
+    await Notification.create({
+      userId: user._id,
+      type: 'bonus_credited',
+      title: 'Welcome Bonus Credited',
+      message: `₦${welcomeBonus.toLocaleString()} welcome bonus has been credited to your wallet.`,
+    });
+
     const token = helpers.generateToken(user._id);
 
     await logAction({

@@ -93,6 +93,28 @@ exports.approveDeposit = async (req, res) => {
   }
 };
 
+exports.deleteDeposit = async (req, res) => {
+  try {
+    const deposit = await Deposit.findByIdAndDelete(req.params.id);
+    if (!deposit) {
+      return res.status(404).json({ success: false, message: 'Deposit not found' });
+    }
+
+    await logAction({
+      userId: req.user._id,
+      action: 'deposit_deleted',
+      entityType: 'Deposit',
+      entityId: deposit._id,
+      details: { amount: deposit.amount },
+      req,
+    });
+
+    res.status(200).json({ success: true, message: 'Deposit deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.rejectDeposit = async (req, res) => {
   try {
     const { adminNote } = req.body;

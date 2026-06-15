@@ -123,6 +123,28 @@ exports.suspendUser = async (req, res) => {
   }
 };
 
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    await logAction({
+      userId: req.user._id,
+      action: 'user_deleted',
+      entityType: 'User',
+      entityId: user._id,
+      details: { username: user.username, email: user.email },
+      req,
+    });
+
+    res.status(200).json({ success: true, message: 'User deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.activateUser = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
