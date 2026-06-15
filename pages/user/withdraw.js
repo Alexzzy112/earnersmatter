@@ -7,9 +7,10 @@ import { FiArrowUpRight, FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const CHARGE_RATE = 0.05;
+const MIN_WITHDRAWAL = 2500;
 
-const WITHDRAWAL_DAYS = [1, 3, 5];
-const DAY_NAMES = { 1: 'Monday', 3: 'Wednesday', 5: 'Friday' };
+const WITHDRAWAL_DAYS = [1, 5];
+const DAY_NAMES = { 1: 'Monday', 5: 'Friday' };
 
 const statusBadge = (status) => {
   const map = {
@@ -23,12 +24,7 @@ const statusBadge = (status) => {
 };
 
 const paymentMethods = [
-  { value: 'bitcoin', label: 'Bitcoin (BTC)' },
-  { value: 'ethereum', label: 'Ethereum (ETH)' },
-  { value: 'usdt', label: 'USDT' },
   { value: 'bank', label: 'Bank Transfer' },
-  { value: 'paypal', label: 'PayPal' },
-  { value: 'other', label: 'Other' },
 ];
 
 export default function WithdrawPage() {
@@ -37,7 +33,7 @@ export default function WithdrawPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('bitcoin');
+  const [paymentMethod, setPaymentMethod] = useState('bank');
   const [accountDetails, setAccountDetails] = useState('');
   const [validation, setValidation] = useState({});
 
@@ -64,8 +60,9 @@ export default function WithdrawPage() {
 
   const validate = () => {
     const errors = {};
-    if (!isAllowedDay) errors.day = 'Withdrawals are only available on Monday, Wednesday, and Friday';
+    if (!isAllowedDay) errors.day = 'Withdrawals are only available on Monday and Friday';
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) errors.amount = 'Please enter a valid amount';
+    else if (numericAmount < MIN_WITHDRAWAL) errors.amount = `Minimum withdrawal is ₦${MIN_WITHDRAWAL.toLocaleString()}`;
     if (!accountDetails.trim()) errors.accountDetails = 'Please enter your account details';
     setValidation(errors);
     return Object.keys(errors).length === 0;
@@ -80,7 +77,7 @@ export default function WithdrawPage() {
       await withdrawalAPI.create({ amount: numericAmount, paymentMethod, accountDetails });
       toast.success('Withdrawal request submitted successfully!');
       setAmount('');
-      setPaymentMethod('bitcoin');
+      setPaymentMethod('bank');
       setAccountDetails('');
 
       const res = await withdrawalAPI.getAll();
@@ -93,7 +90,7 @@ export default function WithdrawPage() {
   };
 
   const nextWithdrawalDay = useMemo(() => {
-    const days = [1, 3, 5];
+    const days = [1, 5];
     const today = new Date().getDay();
     for (const d of days) {
       if (d > today) return DAY_NAMES[d];
@@ -127,7 +124,7 @@ export default function WithdrawPage() {
             <div>
               <h3 className="font-semibold text-warning-700 dark:text-warning-400 text-sm">Withdrawals Unavailable Today</h3>
               <p className="text-sm text-warning-600 dark:text-warning-300 mt-1">
-                Withdrawals can only be processed on Monday, Wednesday, and Friday. Next available day: {nextWithdrawalDay}.
+                Withdrawals can only be processed on Monday and Friday. Next available day: {nextWithdrawalDay}.
               </p>
             </div>
           </div>
@@ -141,7 +138,7 @@ export default function WithdrawPage() {
             {/* Schedule info */}
             <div className="mb-4 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
               <p className="text-xs text-primary-700 dark:text-primary-400 font-medium">
-                Withdrawal Days: Monday, Wednesday, Friday
+                Withdrawal Days: Monday, Friday
               </p>
             </div>
 
@@ -195,7 +192,7 @@ export default function WithdrawPage() {
                 <textarea
                   value={accountDetails}
                   onChange={(e) => { setAccountDetails(e.target.value); setValidation({}); }}
-                  placeholder={`Enter your ${paymentMethod === 'bank' ? 'bank account details' : 'wallet address'}...`}
+                  placeholder="Enter your bank account details..."
                   rows={3}
                   className="input-field resize-none"
                 />

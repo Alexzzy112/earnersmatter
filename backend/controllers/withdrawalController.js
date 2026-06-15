@@ -5,13 +5,13 @@ const Setting = require('../models/Setting');
 const helpers = require('../utils/helpers');
 const { logAction } = require('../utils/auditLogger');
 
-const WITHDRAWAL_DAYS = [1, 3, 5]; // Monday=1, Wednesday=3, Friday=5
+const WITHDRAWAL_DAYS = [1, 5]; // Monday=1, Friday=5
 
 const createWithdrawal = async (req, res) => {
   try {
     const today = new Date().getDay();
     if (!WITHDRAWAL_DAYS.includes(today)) {
-      return res.status(400).json({ success: false, message: 'Withdrawals are only available on Monday, Wednesday, and Friday' });
+      return res.status(400).json({ success: false, message: 'Withdrawals are only available on Monday and Friday' });
     }
 
     const { amount, paymentMethod, accountDetails } = req.body;

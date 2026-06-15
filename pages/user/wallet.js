@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { depositAPI, paymentAccountAPI, settingsAPI } from '@/lib/api';
+import { depositAPI, paymentAccountAPI, productAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { FiDollarSign, FiUpload, FiRefreshCw } from 'react-icons/fi';
+import { FiDollarSign, FiUpload, FiRefreshCw, FiPackage } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const statusBadge = (status) => {
@@ -18,12 +18,12 @@ const statusBadge = (status) => {
 
 export default function WalletPage() {
   const [deposits, setDeposits] = useState([]);
+  const [products, setProducts] = useState([]);
   const [paymentAccount, setPaymentAccount] = useState(null);
-  const [settings, setSettings] = useState({ minDeposit: 10, maxDeposit: 100000 });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [amount, setAmount] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [proofFile, setProofFile] = useState(null);
   const [validation, setValidation] = useState({});
   const fileRef = useRef(null);
@@ -31,14 +31,14 @@ export default function WalletPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [depositRes, accountRes, settingsRes] = await Promise.all([
+        const [depositRes, accountRes, prodRes] = await Promise.all([
           depositAPI.getAll(),
           paymentAccountAPI.getActive(),
-          settingsAPI.getDeposit(),
+          productAPI.getAll(),
         ]);
         setDeposits(depositRes.data || []);
         setPaymentAccount(accountRes.data || null);
-        if (settingsRes.data) setSettings(settingsRes.data);
+        setProducts(prodRes.data || []);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load wallet data');
       } finally {
@@ -48,12 +48,11 @@ export default function WalletPage() {
     fetchData();
   }, []);
 
+  const amount = selectedProduct ? selectedProduct.price : '';
+
   const validate = () => {
     const errors = {};
-    const amt = parseFloat(amount);
-    if (!amount || isNaN(amt)) errors.amount = 'Please enter a valid amount';
-    else if (amt < settings.minDeposit) errors.amount = `Minimum deposit is ₦${settings.minDeposit}`;
-    else if (amt > settings.maxDeposit) errors.amount = `Maximum deposit is ₦${settings.maxDeposit}`;
+    if (!selectedProduct) errors.amount = 'Please select a product to deposit for';
     if (!proofFile) errors.proof = 'Please upload payment proof';
     setValidation(errors);
     return Object.keys(errors).length === 0;
@@ -67,7 +66,7 @@ export default function WalletPage() {
     try {
       await depositAPI.create({ amount: parseFloat(amount) });
       toast.success('Deposit request submitted successfully!');
-      setAmount('');
+      setSelectedProduct(null);
       setProofFile(null);
       if (fileRef.current) fileRef.current.value = '';
 
@@ -122,21 +121,54 @@ export default function WalletPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
-                  Amount (Min: ₦{settings.minDeposit} - Max: ₦{settings.maxDeposit})
+                <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-3">
+                  Select Product to Deposit For
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400 font-medium">₦</span>
-                  <input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => { setAmount(e.target.value); setValidation({}); }}
-                    placeholder="0.00"
-                    className="input-field pl-8"
-                  />
-                </div>
+                {products.length === 0 ? (
+                  <p className="text-sm text-dark-400 py-4 text-center">No products available</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto pr-1">
+                    {products.map((product) => (
+                      <button
+                        key={product._id}
+                        type="button"
+                        onClick={() => { setSelectedProduct(product); setValidation({}); }}
+                        className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                          selectedProduct?._id === product._id
+                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                            : 'border-dark-200 dark:border-dark-700 hover:border-primary-300'
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center shrink-0">
+                          <FiPackage size={18} className="text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-dark-900 dark:text-white truncate">{product.name}</p>
+                          <p className="text-xs text-dark-400">₦{Number(product.price).toLocaleString()}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-semibold text-success-500">+₦{Number(product.dailyEarnings).toLocaleString()}/day</p>
+                          <p className="text-xs text-dark-400">{product.duration} days</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {validation.amount && <p className="text-xs text-danger-500 mt-1">{validation.amount}</p>}
               </div>
+
+              {selectedProduct && (
+                <div className="p-4 bg-dark-50 dark:bg-dark-800 rounded-lg space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-dark-400">Product</span>
+                    <span className="font-medium text-dark-900 dark:text-white">{selectedProduct.name}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-dark-400">Deposit Amount</span>
+                    <span className="font-bold text-lg text-primary-500">₦{Number(amount).toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
