@@ -122,34 +122,27 @@ export default function WalletPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-3">
-                  Select Product to Deposit For
+                  Select Deposit Amount
                 </label>
                 {products.length === 0 ? (
                   <p className="text-sm text-dark-400 py-4 text-center">No products available</p>
                 ) : (
-                  <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto pr-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {products.map((product) => (
                       <button
                         key={product._id}
                         type="button"
                         onClick={() => { setSelectedProduct(product); setValidation({}); }}
-                        className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                        className={`p-4 rounded-xl border text-center transition-all ${
                           selectedProduct?._id === product._id
-                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 ring-2 ring-primary-500/20'
                             : 'border-dark-200 dark:border-dark-700 hover:border-primary-300'
                         }`}
                       >
-                        <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center shrink-0">
-                          <FiPackage size={18} className="text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-dark-900 dark:text-white truncate">{product.name}</p>
-                          <p className="text-xs text-dark-400">₦{Number(product.price).toLocaleString()}</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-sm font-semibold text-success-500">+₦{Number(product.dailyEarnings).toLocaleString()}/day</p>
-                          <p className="text-xs text-dark-400">{product.duration} days</p>
-                        </div>
+                        <p className="text-lg font-bold text-dark-900 dark:text-white">
+                          ₦{Number(product.price).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-dark-400 mt-1">{product.name}</p>
                       </button>
                     ))}
                   </div>

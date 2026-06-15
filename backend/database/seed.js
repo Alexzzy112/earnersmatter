@@ -32,6 +32,7 @@ const seed = async () => {
       { key: 'bonusType', value: 'fixed' },
       { key: 'currencySymbol', value: '₦' },
       { key: 'maintenanceMode', value: false },
+      { key: 'contactTelegram', value: 'https://t.me/earnersmatter' },
     ];
     await Setting.insertMany(settings);
     console.log('Settings created successfully.');

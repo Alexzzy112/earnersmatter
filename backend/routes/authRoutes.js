@@ -10,6 +10,7 @@ router.get('/me', auth, authController.getMe);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.put('/profile', auth, authController.updateProfile);
+router.put('/bank-account', auth, authController.updateBankAccount);
 router.put('/change-password', auth, authController.changePassword);
 router.post('/send-verification-email', auth, authController.sendVerificationEmail);
 router.post('/verify-email', auth, authController.verifyEmail);

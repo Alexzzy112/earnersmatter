@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
-import { withdrawalAPI } from '@/lib/api';
+import { withdrawalAPI, authAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { FiArrowUpRight, FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
+import { FiArrowUpRight, FiRefreshCw, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const CHARGE_RATE = 0.05;
@@ -31,11 +31,16 @@ export default function WithdrawPage() {
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [savingAccount, setSavingAccount] = useState(false);
   const [error, setError] = useState(null);
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('bank');
   const [accountDetails, setAccountDetails] = useState('');
   const [validation, setValidation] = useState({});
+
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [accountName, setAccountName] = useState('');
 
   const today = new Date().getDay();
   const isAllowedDay = WITHDRAWAL_DAYS.includes(today);
@@ -47,8 +52,18 @@ export default function WithdrawPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await withdrawalAPI.getAll();
-        setWithdrawals(res.data.withdrawals || res.data);
+        const [wdRes, userRes] = await Promise.all([
+          withdrawalAPI.getAll(),
+          authAPI.getMe(),
+        ]);
+        setWithdrawals(wdRes.data.withdrawals || wdRes.data);
+        const u = userRes.data || userRes.user || userRes;
+        if (u.bankName || u.accountNumber || u.accountName) {
+          setBankName(u.bankName || '');
+          setAccountNumber(u.accountNumber || '');
+          setAccountName(u.accountName || '');
+          setAccountDetails(formatAccountDetails(u.bankName, u.accountNumber, u.accountName));
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load withdrawal data');
       } finally {
@@ -58,12 +73,33 @@ export default function WithdrawPage() {
     fetchData();
   }, []);
 
+  const formatAccountDetails = (bank, acctNum, acctName) =>
+    `Bank: ${bank}\nAccount: ${acctNum}\nName: ${acctName}`;
+
+  const handleSaveBankAccount = async (e) => {
+    e.preventDefault();
+    if (!bankName || !accountNumber || !accountName) {
+      toast.error('Please fill in all bank account fields');
+      return;
+    }
+    setSavingAccount(true);
+    try {
+      await authAPI.updateBankAccount({ bankName, accountNumber, accountName });
+      setAccountDetails(formatAccountDetails(bankName, accountNumber, accountName));
+      toast.success('Bank account saved successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save bank account');
+    } finally {
+      setSavingAccount(false);
+    }
+  };
+
   const validate = () => {
     const errors = {};
     if (!isAllowedDay) errors.day = 'Withdrawals are only available on Monday and Friday';
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) errors.amount = 'Please enter a valid amount';
     else if (numericAmount < MIN_WITHDRAWAL) errors.amount = `Minimum withdrawal is ₦${MIN_WITHDRAWAL.toLocaleString()}`;
-    if (!accountDetails.trim()) errors.accountDetails = 'Please enter your account details';
+    if (!accountDetails.trim()) errors.accountDetails = 'Please save your bank account details first';
     setValidation(errors);
     return Object.keys(errors).length === 0;
   };
@@ -77,8 +113,6 @@ export default function WithdrawPage() {
       await withdrawalAPI.create({ amount: numericAmount, paymentMethod, accountDetails });
       toast.success('Withdrawal request submitted successfully!');
       setAmount('');
-      setPaymentMethod('bank');
-      setAccountDetails('');
 
       const res = await withdrawalAPI.getAll();
       setWithdrawals(res.data.withdrawals || res.data);
@@ -129,6 +163,57 @@ export default function WithdrawPage() {
             </div>
           </div>
         )}
+
+        {/* Bank Account Management - Always Available */}
+        <div className="card p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+              <FiCheckCircle size={20} className="text-primary-600 dark:text-primary-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-dark-900 dark:text-white">Withdrawal Account</h2>
+              <p className="text-xs text-dark-400">Save your bank account details (available any day)</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSaveBankAccount} className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-dark-500 dark:text-dark-400 mb-1">Bank Name</label>
+                <input
+                  type="text"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  placeholder="e.g. GTBank"
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-dark-500 dark:text-dark-400 mb-1">Account Number</label>
+                <input
+                  type="text"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  placeholder="e.g. 0123456789"
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-dark-500 dark:text-dark-400 mb-1">Account Name</label>
+                <input
+                  type="text"
+                  value={accountName}
+                  onChange={(e) => setAccountName(e.target.value)}
+                  placeholder="e.g. John Doe"
+                  className="input-field"
+                />
+              </div>
+            </div>
+            <button type="submit" className="btn-primary" disabled={savingAccount}>
+              {savingAccount ? 'Saving...' : 'Save Bank Account'}
+            </button>
+          </form>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Withdrawal Form */}
@@ -191,14 +276,14 @@ export default function WithdrawPage() {
                 </label>
                 <textarea
                   value={accountDetails}
-                  onChange={(e) => { setAccountDetails(e.target.value); setValidation({}); }}
-                  placeholder="Enter your bank account details..."
+                  readOnly
+                  placeholder="Save your bank account above first..."
                   rows={3}
-                  className="input-field resize-none"
+                  className="input-field resize-none bg-dark-50 dark:bg-dark-800 cursor-not-allowed"
                 />
                 {validation.accountDetails && <p className="text-xs text-danger-500 mt-1">{validation.accountDetails}</p>}
                 <p className="text-xs text-dark-400 mt-1">
-                  Provide the details where funds should be sent
+                  Your saved bank account details are used for withdrawal
                 </p>
               </div>
 

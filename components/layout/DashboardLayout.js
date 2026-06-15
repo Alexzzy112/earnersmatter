@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { notificationAPI } from '@/lib/api';
 import {
   FiGrid, FiDollarSign, FiArrowUpRight, FiPackage, FiTrendingUp,
-  FiBarChart2, FiUsers, FiRefreshCw, FiBell, FiUser, FiLogOut, FiMenu, FiX
+  FiBarChart2, FiUsers,   FiRefreshCw, FiBell, FiUser, FiLogOut, FiMenu, FiX, FiMessageCircle
 } from 'react-icons/fi';
 import { Toaster } from 'react-hot-toast';
 
@@ -19,6 +19,7 @@ const navItems = [
   { href: '/user/earnings', label: 'Earnings', icon: FiBarChart2 },
   { href: '/user/transactions', label: 'Transactions', icon: FiRefreshCw },
   { href: '/user/referrals', label: 'Referrals', icon: FiUsers },
+  { href: '/user/contact', label: 'Contact', icon: FiMessageCircle },
   { href: '/user/notifications', label: 'Notifications', icon: FiBell },
   { href: '/user/profile', label: 'Profile', icon: FiUser },
 ];
