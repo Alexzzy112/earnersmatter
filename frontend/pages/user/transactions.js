@@ -38,9 +38,8 @@ export default function TransactionsPage() {
     setLoading(true);
     try {
       const res = await walletAPI.getTransactions({ page: p, limit });
-      const data = res.data;
-      setTransactions(data.transactions || data);
-      setTotalPages(data.totalPages || Math.ceil((data.total || 0) / limit) || 1);
+      setTransactions(res.data || []);
+      setTotalPages(res.pagination?.pages || Math.ceil((res.pagination?.total || 0) / limit) || 1);
       setPage(p);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load transactions');

@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const PasswordReset = require('../models/PasswordReset');
+const bcrypt = require('bcryptjs');
 const helpers = require('../utils/helpers');
 const { logAction } = require('../utils/auditLogger');
 const { v4: uuidv4 } = require('uuid');
@@ -323,7 +324,7 @@ const verifyEmail = async (req, res) => {
     const { token } = req.body;
     const user = await User.findOne({
       emailVerificationToken: token,
-      emailVerificationExpires: { $gt: Date.now() }
+      emailVerificationExpires: { $gt: new Date() }
     });
     if (!user) {
       return res.status(400).json({ success: false, message: 'Invalid or expired token' });

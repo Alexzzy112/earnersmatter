@@ -7,7 +7,6 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 import { HiShieldCheck } from 'react-icons/hi';
-import { initCSRF } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,8 +18,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [emailNotVerified, setEmailNotVerified] = useState(false);
-
-  useEffect(() => { initCSRF(); }, []);
 
   if (authLoading) return null;
   if (user) {

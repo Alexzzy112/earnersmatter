@@ -11,11 +11,6 @@ api.interceptors.request.use(async (config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
-
-    if (!['get', 'head', 'options'].includes(config.method?.toLowerCase())) {
-      const csrfToken = localStorage.getItem('csrf-token');
-      if (csrfToken) config.headers['x-csrf-token'] = csrfToken;
-    }
   }
   return config;
 });
@@ -32,17 +27,6 @@ api.interceptors.response.use(
     return Promise.reject(err);
   }
 );
-
-export const initCSRF = async () => {
-  try {
-    const res = await api.get('/csrf-token');
-    const token = res.csrfToken;
-    localStorage.setItem('csrf-token', token);
-    return token;
-  } catch (e) {
-    console.warn('CSRF init failed:', e.message);
-  }
-};
 
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),

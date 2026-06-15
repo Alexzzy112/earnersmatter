@@ -15,7 +15,7 @@ export default function AdminLayout({ children }) {
     if (!loading && !user) {
       router.push('/auth/login');
     } else if (!loading && user && user.role !== 'admin') {
-      router.push('/dashboard');
+      router.push('/user/dashboard');
     }
   }, [loading, user, router]);
 

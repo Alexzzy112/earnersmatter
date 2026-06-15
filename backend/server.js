@@ -3,7 +3,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const crypto = require('crypto');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss');
 require('dotenv').config();
@@ -45,26 +44,6 @@ app.use((req, res, next) => {
 // Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// CSRF protection
-app.use((req, res, next) => {
-  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
-    return next();
-  }
-  const token = req.headers['x-csrf-token'];
-  const cookieToken = req.cookies?.['csrf-token'];
-  if (!token || !cookieToken || token !== cookieToken) {
-    return res.status(403).json({ success: false, message: 'CSRF token validation failed' });
-  }
-  next();
-});
-
-// CSRF token endpoint
-app.get('/api/csrf-token', (req, res) => {
-  const token = crypto.randomBytes(32).toString('hex');
-  res.cookie('csrf-token', token, { httpOnly: true, sameSite: 'strict' });
-  res.json({ success: true, csrfToken: token });
-});
-
 // Routes
 app.use('/api', routes);
 
@@ -81,9 +60,6 @@ app.use((err, req, res, next) => {
     message: err.message || 'Internal Server Error'
   });
 });
-
-// Connect DB
-connectDB().catch(console.error);
 
 // Start server only when run directly (not on Vercel)
 if (!process.env.VERCEL) {

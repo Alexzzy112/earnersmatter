@@ -22,8 +22,8 @@ export default function ProductsPage() {
           productAPI.getAll(),
           walletAPI.getBalance(),
         ]);
-        setProducts(prodRes.data.products || prodRes.data);
-        setBalance(balRes.data.balance || balRes.data);
+        setProducts(prodRes.data || []);
+        setBalance(balRes.data?.walletBalance || 0);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load products');
       } finally {

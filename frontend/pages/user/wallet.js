@@ -36,8 +36,8 @@ export default function WalletPage() {
           paymentAccountAPI.getActive(),
           settingsAPI.getDeposit(),
         ]);
-        setDeposits(depositRes.data.deposits || depositRes.data);
-        setPaymentAccount(accountRes.data.account || accountRes.data);
+        setDeposits(depositRes.data || []);
+        setPaymentAccount(accountRes.data || null);
         if (settingsRes.data) setSettings(settingsRes.data);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load wallet data');
@@ -65,19 +65,14 @@ export default function WalletPage() {
 
     setSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('amount', amount);
-      formData.append('proof', proofFile);
-      if (paymentAccount?._id) formData.append('paymentAccount', paymentAccount._id);
-
-      await depositAPI.create(formData);
+      await depositAPI.create({ amount: parseFloat(amount) });
       toast.success('Deposit request submitted successfully!');
       setAmount('');
       setProofFile(null);
       if (fileRef.current) fileRef.current.value = '';
 
       const res = await depositAPI.getAll();
-      setDeposits(res.data.deposits || res.data);
+      setDeposits(res.data || []);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to submit deposit');
     } finally {
