@@ -140,8 +140,8 @@ export default function UserDashboard() {
                 'Esther M. withdrew ₦16,000',
                 'Kehinde J. withdrew ₦55,000',
               ];
-              const text = items.join('  •  ');
-              return text + '  •  ' + text;
+              const text = items.join('      •      ');
+              return text + '      •      ' + text;
             })()}
           </div>
         </div>

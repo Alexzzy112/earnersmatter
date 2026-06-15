@@ -10,6 +10,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const connectDB = require('./config/db');
 const routes = require('./routes');
+const uploadsDir = require('./config/upload');
 
 const app = express();
 
@@ -42,17 +43,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static files for uploads
-const uploadsDir = process.env.VERCEL
-  ? '/tmp/uploads'
-  : path.join(__dirname, 'uploads');
-try {
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-  }
-} catch (e) {
-  console.error('Failed to create uploads directory:', e.message);
-}
 // Serve uploaded files via API route (works on Vercel serverless)
 app.get('/api/uploads/:filename', (req, res) => {
   const filePath = path.join(uploadsDir, req.params.filename);
