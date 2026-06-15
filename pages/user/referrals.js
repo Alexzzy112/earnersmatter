@@ -54,7 +54,7 @@ export default function ReferralsPage() {
     }
   };
 
-  if (loading) return <DashboardLayout><LoadingSpinner text="Loading referrals..." /></DashboardLayout>;
+  if (loading) return <DashboardLayout><LoadingSpinner /></DashboardLayout>;
   if (error) return (
     <DashboardLayout>
       <div className="text-center py-16">
@@ -77,16 +77,16 @@ export default function ReferralsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <StatsCard
-            icon={<FiUsers />}
-            label="Total Referrals"
+            icon={FiUsers}
+            title="Total Referrals"
             value={stats.totalReferrals}
-            color="primary"
+            color="blue"
           />
           <StatsCard
-            icon={<FiLink />}
-            label="Total Earnings"
+            icon={FiLink}
+            title="Total Earnings"
             value={`₦${Number(stats.totalEarnings || 0).toLocaleString()}`}
-            color="success"
+            color="green"
           />
         </div>
 

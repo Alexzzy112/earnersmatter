@@ -39,7 +39,7 @@ export default function EarningsPage() {
 
   const totalEarnings = earnings.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-  if (loading) return <DashboardLayout><LoadingSpinner text="Loading earnings..." /></DashboardLayout>;
+  if (loading) return <DashboardLayout><LoadingSpinner /></DashboardLayout>;
   if (error) return (
     <DashboardLayout>
       <div className="text-center py-16">
@@ -62,16 +62,16 @@ export default function EarningsPage() {
         {/* Summary */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard
-            icon={<FiDollarSign />}
-            label="Total Earnings"
+            icon={FiDollarSign}
+            title="Total Earnings"
             value={`₦${totalEarnings.toLocaleString()}`}
-            color="success"
+            color="green"
           />
           <StatsCard
-            icon={<FiBarChart2 />}
-            label="This Period"
+            icon={FiBarChart2}
+            title="This Period"
             value={`₦${totalEarnings.toLocaleString()}`}
-            color="primary"
+            color="blue"
           />
         </div>
 

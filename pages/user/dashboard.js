@@ -87,13 +87,13 @@ export default function UserDashboard() {
   );
 
   const stats = [
-    { title: 'Wallet Balance', value: `₦${Number(balance).toLocaleString()}`, icon: <FiDollarSign />, color: 'blue' },
-    { title: 'Total Deposits', value: `₦${Number(d.totalDeposits).toLocaleString()}`, icon: <FiArrowUpRight />, color: 'green' },
-    { title: 'Total Withdrawals', value: `₦${Number(d.totalWithdrawals).toLocaleString()}`, icon: <FiRefreshCw />, color: 'red' },
-    { title: 'Total Investments', value: `₦${Number(d.totalInvestments).toLocaleString()}`, icon: <FiBriefcase />, color: 'yellow' },
-    { title: 'Total Earnings', value: `₦${Number(d.totalEarnings).toLocaleString()}`, icon: <FiTrendingUp />, color: 'green' },
-    { title: 'Active Products', value: d.activeInvestments ?? 0, icon: <FiPackage />, color: 'purple' },
-    { title: 'Completed Products', value: d.completedInvestments ?? 0, icon: <FiCheckCircle />, color: 'green' },
+    { title: 'Wallet Balance', value: `₦${Number(balance).toLocaleString()}`, icon: FiDollarSign, color: 'blue' },
+    { title: 'Total Deposits', value: `₦${Number(d.totalDeposits).toLocaleString()}`, icon: FiArrowUpRight, color: 'green' },
+    { title: 'Total Withdrawals', value: `₦${Number(d.totalWithdrawals).toLocaleString()}`, icon: FiRefreshCw, color: 'red' },
+    { title: 'Total Investments', value: `₦${Number(d.totalInvestments).toLocaleString()}`, icon: FiBriefcase, color: 'yellow' },
+    { title: 'Total Earnings', value: `₦${Number(d.totalEarnings).toLocaleString()}`, icon: FiTrendingUp, color: 'green' },
+    { title: 'Active Products', value: d.activeInvestments ?? 0, icon: FiPackage, color: 'purple' },
+    { title: 'Completed Products', value: d.completedInvestments ?? 0, icon: FiCheckCircle, color: 'green' },
   ];
 
   return (
