@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { FaUser, FaEnvelope, FaPhone, FaLock, FaEye, FaEyeSlash, FaGift, FaSpinner, FaGoogle, FaFacebook } from 'react-icons/fa';
 import { HiShieldCheck } from 'react-icons/hi';
-import { initCSRF } from '@/lib/api';
+
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,8 +28,6 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [verificationPending, setVerificationPending] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
-
-  useEffect(() => { initCSRF(); }, []);
 
   if (authLoading) return null;
   if (user) {
@@ -144,6 +142,7 @@ export default function RegisterPage() {
               </button>
             </div>
           ) : (
+          <>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-dark-300 mb-1.5">Username</label>
@@ -341,8 +340,9 @@ export default function RegisterPage() {
               Sign in
             </Link>
           </p>
-        </div>
+        </>
           )}
+        </div>
       </div>
     </div>
   );
