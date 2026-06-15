@@ -100,17 +100,19 @@ export default function UserDashboard() {
     <DashboardLayout>
       <style>{`
         @keyframes marquee {
-          0% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
         }
         .marquee-track {
           overflow: hidden;
           white-space: nowrap;
           position: relative;
+          width: 100%;
         }
         .marquee-content {
           display: inline-block;
-          animation: marquee 30s linear infinite;
+          white-space: nowrap;
+          animation: marquee 60s linear infinite;
           padding-left: 100%;
         }
       `}</style>
@@ -119,24 +121,28 @@ export default function UserDashboard() {
         {/* Fake Withdrawal Marquee */}
         <div className="marquee-track bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg py-2 px-4 text-sm text-success-700 dark:text-success-300">
           <div className="marquee-content">
-            {[
-              'Chisom O. withdrew ₦15,000 • 2 mins ago',
-              'Emeka N. withdrew ₦25,500 • 5 mins ago',
-              'Aisha B. withdrew ₦10,000 • 8 mins ago',
-              'David A. withdrew ₦50,000 • 12 mins ago',
-              'Grace E. withdrew ₦8,500 • 18 mins ago',
-              'Samuel K. withdrew ₦35,000 • 22 mins ago',
-              'Blessing W. withdrew ₦20,000 • 30 mins ago',
-              'Michael T. withdrew ₦45,000 • 35 mins ago',
-              'Jennifer D. withdrew ₦12,000 • 40 mins ago',
-              'Patrick O. withdrew ₦60,000 • 48 mins ago',
-              'Ngozi F. withdrew ₦18,500 • 52 mins ago',
-              'Ibrahim S. withdrew ₦30,000 • 1 hour ago',
-              'Funke A. withdrew ₦22,000 • 1 hour ago',
-              'Tunde R. withdrew ₦40,000 • 1 hour ago',
-              'Esther M. withdrew ₦16,000 • 2 hours ago',
-              'Kehinde J. withdrew ₦55,000 • 2 hours ago',
-            ].join('  •  ')}
+            {(() => {
+              const items = [
+                'Chisom O. withdrew ₦15,000',
+                'Emeka N. withdrew ₦25,500',
+                'Aisha B. withdrew ₦10,000',
+                'David A. withdrew ₦50,000',
+                'Grace E. withdrew ₦8,500',
+                'Samuel K. withdrew ₦35,000',
+                'Blessing W. withdrew ₦20,000',
+                'Michael T. withdrew ₦45,000',
+                'Jennifer D. withdrew ₦12,000',
+                'Patrick O. withdrew ₦60,000',
+                'Ngozi F. withdrew ₦18,500',
+                'Ibrahim S. withdrew ₦30,000',
+                'Funke A. withdrew ₦22,000',
+                'Tunde R. withdrew ₦40,000',
+                'Esther M. withdrew ₦16,000',
+                'Kehinde J. withdrew ₦55,000',
+              ];
+              const text = items.join('  •  ');
+              return text + '  •  ' + text;
+            })()}
           </div>
         </div>
 
