@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const connectDB = require('./config/db');
@@ -35,26 +35,17 @@ app.use(mongoSanitize());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// XSS sanitization middleware
-const sanitizeValue = (value) => {
-  if (typeof value === 'string') return xss(value);
-  if (Array.isArray(value)) return value.map(sanitizeValue);
-  if (value && typeof value === 'object') {
-    const sanitized = {};
-    for (const [key, val] of Object.entries(value)) {
-      sanitized[key] = sanitizeValue(val);
-    }
-    return sanitized;
-  }
-  return value;
-};
-
-app.use((req, res, next) => {
-  if (req.body) req.body = sanitizeValue(req.body);
-  if (req.query) req.query = sanitizeValue(req.query);
-  if (req.params) req.params = sanitizeValue(req.params);
-  next();
+// Rate limiting for auth routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Too many attempts, please try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
+
+// Apply rate limiter to auth routes
+app.use('/api/auth', authLimiter);
 
 // Routes
 app.use('/api', routes);

@@ -5,6 +5,8 @@ const Product = require('../../models/Product');
 const getAllInvestments = async (req, res) => {
   try {
     const { page = 1, limit = 15, status, search } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 15);
     const query = {};
     if (status && status !== 'all') query.status = status;
     if (search) {
@@ -16,14 +18,14 @@ const getAllInvestments = async (req, res) => {
       ];
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
     const [investments, total] = await Promise.all([
       Investment.find(query)
         .populate('userId', 'username email')
         .populate('productId', 'name price duration')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(parseInt(limit)),
+        .limit(limitNum),
       Investment.countDocuments(query),
     ]);
 
@@ -31,9 +33,9 @@ const getAllInvestments = async (req, res) => {
       success: true,
       data: {
         investments,
-        totalPages: Math.ceil(total / parseInt(limit)),
+        totalPages: Math.ceil(total / limitNum),
         total,
-        page: parseInt(page),
+        page: pageNum,
       },
     });
   } catch (error) {

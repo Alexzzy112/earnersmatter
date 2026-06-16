@@ -8,7 +8,7 @@ const createDeposit = async (req, res) => {
   try {
     const { amount } = req.body;
 
-    if (!amount || amount <= 0) {
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
       return res.status(400).json({ success: false, message: 'Valid amount is required' });
     }
 

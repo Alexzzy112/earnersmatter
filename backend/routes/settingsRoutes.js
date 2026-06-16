@@ -5,5 +5,6 @@ const { auth } = require('../middleware/auth');
 
 router.get('/deposit', auth, settingsController.getDepositSettings);
 router.get('/contact', settingsController.getContactSettings);
+router.get('/withdrawal', auth, settingsController.getWithdrawalSettings);
 
 module.exports = router;

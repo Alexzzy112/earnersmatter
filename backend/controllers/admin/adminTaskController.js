@@ -1,23 +1,26 @@
 const Task = require('../../models/Task');
 const { generateDailyTasks } = require('../../cron/tasks');
+const { logAction } = require('../../utils/auditLogger');
 
 exports.getAllTasks = async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
-    const skip = (page - 1) * limit;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 20);
+    const skip = (pageNum - 1) * limitNum;
 
     const [tasks, total] = await Promise.all([
-      Task.find().sort({ forDate: -1, createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Task.find().sort({ forDate: -1, createdAt: -1 }).skip(skip).limit(limitNum),
       Task.countDocuments(),
     ]);
 
     res.status(200).json({
       success: true,
       data: tasks,
-      page: Number(page),
-      limit: Number(limit),
+      page: pageNum,
+      limit: limitNum,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limitNum),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -45,6 +48,15 @@ exports.createTask = async (req, res) => {
       forDate: today,
     });
 
+    await logAction({
+      userId: req.user._id,
+      action: 'task_created',
+      entityType: 'Task',
+      entityId: task._id,
+      details: { title },
+      req,
+    });
+
     res.status(201).json({ success: true, data: task });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -57,6 +69,16 @@ exports.updateTask = async (req, res) => {
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
+
+    await logAction({
+      userId: req.user._id,
+      action: 'task_updated',
+      entityType: 'Task',
+      entityId: task._id,
+      details: req.body,
+      req,
+    });
+
     res.status(200).json({ success: true, data: task });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -69,6 +91,16 @@ exports.deleteTask = async (req, res) => {
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
+
+    await logAction({
+      userId: req.user._id,
+      action: 'task_deleted',
+      entityType: 'Task',
+      entityId: task._id,
+      details: { title: task.title },
+      req,
+    });
+
     res.status(200).json({ success: true, message: 'Task deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -78,6 +110,15 @@ exports.deleteTask = async (req, res) => {
 exports.generateTasks = async (req, res) => {
   try {
     const result = await generateDailyTasks();
+
+    await logAction({
+      userId: req.user._id,
+      action: 'tasks_generated',
+      entityType: 'Task',
+      details: result,
+      req,
+    });
+
     res.status(200).json({ success: true, ...result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

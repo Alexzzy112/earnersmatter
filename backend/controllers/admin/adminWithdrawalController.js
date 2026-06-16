@@ -81,7 +81,7 @@ exports.approveWithdrawal = async (req, res) => {
       userId: withdrawal.userId,
       type: 'withdrawal',
       title: 'Withdrawal Approved',
-      message: `Your withdrawal of $${withdrawal.amount.toFixed(2)} has been approved`,
+      message: `Your withdrawal of ₦${withdrawal.amount.toLocaleString()} has been approved`,
     });
 
     res.status(200).json({ success: true, data: withdrawal });
@@ -145,8 +145,8 @@ exports.rejectWithdrawal = async (req, res) => {
       type: 'withdrawal',
       title: 'Withdrawal Rejected',
       message: adminNote
-        ? `Your withdrawal of $${withdrawal.amount.toFixed(2)} has been rejected: ${adminNote}`
-        : `Your withdrawal of $${withdrawal.amount.toFixed(2)} has been rejected`,
+        ? `Your withdrawal of ₦${withdrawal.amount.toLocaleString()} has been rejected: ${adminNote}`
+        : `Your withdrawal of ₦${withdrawal.amount.toLocaleString()} has been rejected`,
     });
 
     res.status(200).json({ success: true, data: withdrawal });

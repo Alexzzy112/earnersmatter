@@ -1,13 +1,10 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
-import { withdrawalAPI, authAPI } from '@/lib/api';
+import { withdrawalAPI, authAPI, settingsAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { FiArrowUpRight, FiRefreshCw, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-
-const CHARGE_RATE = 0.05;
-const MIN_WITHDRAWAL = 2500;
 
 const WITHDRAWAL_DAYS = [1, 5];
 const DAY_NAMES = { 1: 'Monday', 5: 'Friday' };
@@ -37,6 +34,8 @@ export default function WithdrawPage() {
   const [paymentMethod, setPaymentMethod] = useState('bank');
   const [accountDetails, setAccountDetails] = useState('');
   const [validation, setValidation] = useState({});
+  const [chargeRate, setChargeRate] = useState(0.05);
+  const [minWithdrawal, setMinWithdrawal] = useState(2500);
 
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
@@ -46,15 +45,16 @@ export default function WithdrawPage() {
   const isAllowedDay = WITHDRAWAL_DAYS.includes(today);
 
   const numericAmount = parseFloat(amount) || 0;
-  const charge = numericAmount * CHARGE_RATE;
+  const charge = numericAmount * chargeRate;
   const netAmount = numericAmount - charge;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [wdRes, userRes] = await Promise.all([
+        const [wdRes, userRes, settingsRes] = await Promise.all([
           withdrawalAPI.getAll(),
           authAPI.getMe(),
+          settingsAPI.getWithdrawal(),
         ]);
         setWithdrawals(wdRes.data.withdrawals || wdRes.data);
         const u = userRes.data || userRes.user || userRes;
@@ -64,6 +64,9 @@ export default function WithdrawPage() {
           setAccountName(u.accountName || '');
           setAccountDetails(formatAccountDetails(u.bankName, u.accountNumber, u.accountName));
         }
+        const s = settingsRes.data || {};
+        if (s.chargeRate) setChargeRate(Number(s.chargeRate));
+        if (s.minWithdrawal) setMinWithdrawal(Number(s.minWithdrawal));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load withdrawal data');
       } finally {
@@ -98,7 +101,7 @@ export default function WithdrawPage() {
     const errors = {};
     if (!isAllowedDay) errors.day = 'Withdrawals are only available on Monday and Friday';
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) errors.amount = 'Please enter a valid amount';
-    else if (numericAmount < MIN_WITHDRAWAL) errors.amount = `Minimum withdrawal is ₦${MIN_WITHDRAWAL.toLocaleString()}`;
+    else if (numericAmount < minWithdrawal) errors.amount = `Minimum withdrawal is ₦${minWithdrawal.toLocaleString()}`;
     if (!accountDetails.trim()) errors.accountDetails = 'Please save your bank account details first';
     setValidation(errors);
     return Object.keys(errors).length === 0;
@@ -247,7 +250,7 @@ export default function WithdrawPage() {
               {numericAmount > 0 && (
                 <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg space-y-1 text-sm">
                   <div className="flex justify-between text-dark-500">
-                    <span>Charge (5%)</span>
+                    <span>Charge ({(chargeRate * 100).toFixed(0)}%)</span>
                     <span className="text-danger-500">-₦{charge.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-semibold text-dark-900 dark:text-white border-t border-dark-200 dark:border-dark-700 pt-1">
@@ -317,8 +320,8 @@ export default function WithdrawPage() {
                           {new Date(wd.createdAt || wd.date).toLocaleDateString()}
                         </td>
                         <td className="font-medium">₦{Number(wd.amount).toLocaleString()}</td>
-                        <td className="text-danger-500 text-sm">-₦{Number(wd.charge || wd.amount * CHARGE_RATE).toFixed(2)}</td>
-                        <td className="text-success-500 font-medium">₦{Number(wd.netAmount || wd.amount * (1 - CHARGE_RATE)).toFixed(2)}</td>
+                        <td className="text-danger-500 text-sm">-₦{Number(wd.charge || wd.amount * chargeRate).toFixed(2)}</td>
+                        <td className="text-success-500 font-medium">₦{Number(wd.netAmount || wd.amount * (1 - chargeRate)).toFixed(2)}</td>
                         <td>{statusBadge(wd.status)}</td>
                       </tr>
                     ))}

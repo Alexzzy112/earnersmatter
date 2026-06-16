@@ -42,8 +42,11 @@ export default function ReferralsPage() {
     fetchData();
   }, []);
 
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const [originReady, setOriginReady] = useState(origin);
+  useEffect(() => { setOriginReady(window.location.origin); }, []);
   const referralLink = stats.referralLink ||
-    `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/register?ref=${stats.referralCode || ''}`;
+    `${originReady}/auth/register?ref=${stats.referralCode || ''}`;
 
   const copyToClipboard = async () => {
     try {

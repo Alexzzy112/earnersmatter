@@ -97,13 +97,20 @@ const completeTask = async (req, res) => {
     user.totalEarnings += reward;
     await user.save();
 
-    await UserTask.create({
-      userId: req.user._id,
-      taskId: task._id,
-      reward,
-      completedAt: new Date(),
-      forDate: today,
-    });
+    try {
+      await UserTask.create({
+        userId: req.user._id,
+        taskId: task._id,
+        reward,
+        completedAt: new Date(),
+        forDate: today,
+      });
+    } catch (createError) {
+      if (createError.code === 11000) {
+        return res.status(400).json({ success: false, message: 'Task already completed' });
+      }
+      throw createError;
+    }
 
     await Transaction.create({
       userId: req.user._id,

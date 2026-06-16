@@ -29,20 +29,26 @@ const processDailyEarnings = async () => {
         const reference = generateReference();
         const balanceBefore = user.walletBalance;
 
+        const updatedUser = await User.findOneAndUpdate(
+          { _id: user._id },
+          { $inc: { walletBalance: dailyEarnings, totalEarnings: dailyEarnings } },
+          { new: true }
+        );
+
+        if (!updatedUser) continue;
+
+        const balanceAfter = updatedUser.walletBalance;
+
         const transaction = await Transaction.create({
           userId: user._id,
           type: 'earning',
           amount: dailyEarnings,
           balanceBefore,
-          balanceAfter: balanceBefore + dailyEarnings,
+          balanceAfter,
           description: `Daily earning for investment ${investment._id}`,
           reference,
           status: 'completed',
         });
-
-        user.walletBalance += dailyEarnings;
-        user.totalEarnings += dailyEarnings;
-        await user.save();
 
         investment.earningsReceived += dailyEarnings;
         investment.lastEarningAt = now;
@@ -91,7 +97,7 @@ const processDailyEarnings = async () => {
           entityId: investment._id,
           details: {
             amount: dailyEarnings,
-            balanceAfter: user.walletBalance,
+            balanceAfter,
             transactionId: transaction._id,
           },
         });
