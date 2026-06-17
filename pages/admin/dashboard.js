@@ -56,9 +56,12 @@ export default function AdminDashboard() {
     const doubleConfirm = window.confirm('This is irreversible! All data will be lost. Proceed?');
     if (!doubleConfirm) return;
 
+    const securityKey = window.prompt('Enter reseed security key:');
+    if (!securityKey) return;
+
     setReseeding(true);
     try {
-      await adminAPI.reseed();
+      await adminAPI.reseed(securityKey);
       toast.success('Database reseeded successfully!');
       fetchData();
     } catch (err) {

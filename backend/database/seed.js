@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
 const connectDB = require('../config/db');
@@ -7,7 +6,6 @@ const Setting = require('../models/Setting');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const PaymentAccount = require('../models/PaymentAccount');
-const { generateReferralCode } = require('../utils/helpers');
 
 const seed = async () => {
   try {
@@ -48,17 +46,6 @@ const seed = async () => {
       emailVerifiedAt: new Date(),
     });
     console.log('Admin user created successfully.');
-
-    await User.create({
-      username: 'john',
-      email: 'john@example.com',
-      password: 'User@12345',
-      role: 'user',
-      status: 'active',
-      referralCode: generateReferralCode(),
-      emailVerifiedAt: new Date(),
-    });
-    console.log('Test user created successfully.');
 
     const products = [
       { name: 'iPhone 7', price: 3000, dailyEarnings: 540, duration: 30, description: 'iPhone 7 investment slot — earn 18% daily', status: 'active', image: '/images/products/iphone-7.png' },

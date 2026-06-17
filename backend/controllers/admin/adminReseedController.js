@@ -1,15 +1,14 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const Setting = require('../../models/Setting');
 const User = require('../../models/User');
 const Product = require('../../models/Product');
 const PaymentAccount = require('../../models/PaymentAccount');
-const { generateReferralCode } = require('../../utils/helpers');
 
 const reseed = async (req, res) => {
   try {
-    if (process.env.NODE_ENV === 'production') {
-      return res.status(403).json({ success: false, message: 'Not available in production' });
+    const { securityKey } = req.body;
+    if (!securityKey || securityKey !== process.env.RESEED_KEY) {
+      return res.status(403).json({ success: false, message: 'Invalid security key' });
     }
 
     const collections = await mongoose.connection.db.listCollections().toArray();
@@ -42,16 +41,6 @@ const reseed = async (req, res) => {
       password: 'Admin@12345',
       role: 'admin',
       status: 'active',
-      emailVerifiedAt: new Date(),
-    });
-
-    await User.create({
-      username: 'john',
-      email: 'john@example.com',
-      password: 'User@12345',
-      role: 'user',
-      status: 'active',
-      referralCode: generateReferralCode(),
       emailVerifiedAt: new Date(),
     });
 
