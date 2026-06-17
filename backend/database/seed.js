@@ -28,7 +28,7 @@ const seed = async () => {
       { key: 'minWithdrawal', value: 2500 },
       { key: 'maxWithdrawal', value: 50000 },
       { key: 'withdrawalCharge', value: 5 },
-      { key: 'welcomeBonus', value: 700 },
+      { key: 'welcomeBonus', value: 1000 },
       { key: 'referralBonus', value: 30 },
       { key: 'bonusType', value: 'percentage' },
       { key: 'currencySymbol', value: '₦' },

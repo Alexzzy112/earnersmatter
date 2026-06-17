@@ -50,7 +50,7 @@ const register = async (req, res) => {
 
     // Welcome bonus from settings
     const welcomeSetting = await Setting.findOne({ key: 'welcomeBonus' });
-    const welcomeBonus = Number(welcomeSetting?.value) || 700;
+    const welcomeBonus = Number(welcomeSetting?.value) || 1000;
     if (welcomeBonus > 0) {
       user.walletBalance += welcomeBonus;
       await user.save();

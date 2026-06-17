@@ -81,47 +81,54 @@ const purchaseProduct = async (req, res) => {
       message: `You have successfully purchased ${product.name}${quantity > 1 ? ` (x${quantity})` : ''} for ₦${(product.price * quantity).toLocaleString()}.`
     });
 
-    // Referral bonus on product purchase
+    // Referral bonus — one-time only per referred user
     if (user.referredBy) {
-      const referrer = await User.findById(user.referredBy);
-      if (referrer) {
-        const [bonusSetting, typeSetting] = await Promise.all([
-          Setting.findOne({ key: 'referralBonus' }),
-          Setting.findOne({ key: 'bonusType' }),
-        ]);
-        const bonusType = typeSetting?.value || 'percentage';
-        const bonusValue = Number(bonusSetting?.value) || 30;
-        const bonusAmount = bonusType === 'percentage'
-          ? Math.round(totalCost * (bonusValue / 100))
-          : Math.round(bonusValue);
-        if (bonusAmount > 0) {
-          referrer.walletBalance += bonusAmount;
-          referrer.referralEarnings += bonusAmount;
-          await referrer.save();
+      const existingReferral = await Referral.findOne({
+        referrerId: user.referredBy,
+        referredUserId: user._id,
+        status: 'paid',
+      });
+      if (!existingReferral) {
+        const referrer = await User.findById(user.referredBy);
+        if (referrer) {
+          const [bonusSetting, typeSetting] = await Promise.all([
+            Setting.findOne({ key: 'referralBonus' }),
+            Setting.findOne({ key: 'bonusType' }),
+          ]);
+          const bonusType = typeSetting?.value || 'percentage';
+          const bonusValue = Number(bonusSetting?.value) || 30;
+          const bonusAmount = bonusType === 'percentage'
+            ? Math.round(totalCost * (bonusValue / 100))
+            : Math.round(bonusValue);
+          if (bonusAmount > 0) {
+            referrer.walletBalance += bonusAmount;
+            referrer.referralEarnings += bonusAmount;
+            await referrer.save();
 
-          await Transaction.create({
-            userId: referrer._id,
-            type: 'referral_bonus',
-            amount: bonusAmount,
-            balanceBefore: referrer.walletBalance - bonusAmount,
-            balanceAfter: referrer.walletBalance,
-            description: `Referral bonus for ${user.username}'s purchase of ${product.name}`,
-            reference: helpers.generateReference(),
-            status: 'completed',
-          });
+            await Transaction.create({
+              userId: referrer._id,
+              type: 'referral_bonus',
+              amount: bonusAmount,
+              balanceBefore: referrer.walletBalance - bonusAmount,
+              balanceAfter: referrer.walletBalance,
+              description: `Referral bonus for ${user.username}'s purchase of ${product.name}`,
+              reference: helpers.generateReference(),
+              status: 'completed',
+            });
 
-          await Notification.create({
-            userId: referrer._id,
-            type: 'referral_bonus',
-            title: 'Referral Bonus Credited',
-            message: `You earned ₦${bonusAmount.toLocaleString()} referral bonus from ${user.username}'s purchase`,
-          });
+            await Notification.create({
+              userId: referrer._id,
+              type: 'referral_bonus',
+              title: 'Referral Bonus Credited',
+              message: `You earned ₦${bonusAmount.toLocaleString()} referral bonus from ${user.username}'s purchase`,
+            });
 
-          await Referral.findOneAndUpdate(
-            { referrerId: referrer._id, referredUserId: user._id },
-            { bonusAmount, status: 'paid' },
-            { upsert: true }
-          );
+            await Referral.findOneAndUpdate(
+              { referrerId: referrer._id, referredUserId: user._id },
+              { bonusAmount, status: 'paid' },
+              { upsert: true }
+            );
+          }
         }
       }
     }
