@@ -61,19 +61,19 @@ const seed = async () => {
     console.log('Test user created successfully.');
 
     const products = [
-      { name: 'iPhone 7', price: 3000, dailyEarnings: 540, duration: 30, description: 'iPhone 7 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+7' },
-      { name: 'iPhone 8', price: 7000, dailyEarnings: 1260, duration: 30, description: 'iPhone 8 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+8' },
-      { name: 'iPhone X', price: 15000, dailyEarnings: 2700, duration: 30, description: 'iPhone X investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+X' },
-      { name: 'iPhone XR', price: 25000, dailyEarnings: 4500, duration: 30, description: 'iPhone XR investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+XR' },
-      { name: 'iPhone 11', price: 30000, dailyEarnings: 5400, duration: 30, description: 'iPhone 11 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+11' },
-      { name: 'iPhone 12', price: 50000, dailyEarnings: 9000, duration: 30, description: 'iPhone 12 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+12' },
-      { name: 'iPhone 13', price: 70000, dailyEarnings: 12600, duration: 30, description: 'iPhone 13 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+13' },
-      { name: 'iPhone 14', price: 100000, dailyEarnings: 18000, duration: 30, description: 'iPhone 14 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+14' },
-      { name: 'iPhone 15', price: 300000, dailyEarnings: 54000, duration: 30, description: 'iPhone 15 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+15' },
-      { name: 'iPhone 16', price: 500000, dailyEarnings: 90000, duration: 30, description: 'iPhone 16 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+16' },
-      { name: 'iPhone 17', price: 700000, dailyEarnings: 126000, duration: 30, description: 'iPhone 17 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+17' },
-      { name: 'iPhone 18', price: 1000000, dailyEarnings: 180000, duration: 30, description: 'iPhone 18 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+18' },
-      { name: 'iPhone 19', price: 2000000, dailyEarnings: 360000, duration: 30, description: 'iPhone 19 investment slot — earn 18% daily', status: 'active', image: 'https://placehold.co/400x400/1a1a2e/e94560?text=iPhone+19' },
+      { name: 'iPhone 7', price: 3000, dailyEarnings: 540, duration: 30, description: 'iPhone 7 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone9,1/Silver.png' },
+      { name: 'iPhone 8', price: 7000, dailyEarnings: 1260, duration: 30, description: 'iPhone 8 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone10,1/Space%20Gray.png' },
+      { name: 'iPhone X', price: 15000, dailyEarnings: 2700, duration: 30, description: 'iPhone X investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone10,3/Space%20Gray.png' },
+      { name: 'iPhone XR', price: 25000, dailyEarnings: 4500, duration: 30, description: 'iPhone XR investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone11,8/Black.png' },
+      { name: 'iPhone 11', price: 30000, dailyEarnings: 5400, duration: 30, description: 'iPhone 11 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone12,1/Black.png' },
+      { name: 'iPhone 12', price: 50000, dailyEarnings: 9000, duration: 30, description: 'iPhone 12 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone13,2/Black.png' },
+      { name: 'iPhone 13', price: 70000, dailyEarnings: 12600, duration: 30, description: 'iPhone 13 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone14,5/Midnight.png' },
+      { name: 'iPhone 14', price: 100000, dailyEarnings: 18000, duration: 30, description: 'iPhone 14 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone14,7/Midnight.png' },
+      { name: 'iPhone 15', price: 300000, dailyEarnings: 54000, duration: 30, description: 'iPhone 15 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone15,4/Black.png' },
+      { name: 'iPhone 16', price: 500000, dailyEarnings: 90000, duration: 30, description: 'iPhone 16 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone17,3/Black.png' },
+      { name: 'iPhone 17', price: 700000, dailyEarnings: 126000, duration: 30, description: 'iPhone 17 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone18,3/Black.png' },
+      { name: 'iPhone 18', price: 1000000, dailyEarnings: 180000, duration: 30, description: 'iPhone 18 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone18,1/Silver.png' },
+      { name: 'iPhone 19', price: 2000000, dailyEarnings: 360000, duration: 30, description: 'iPhone 19 investment slot — earn 18% daily', status: 'active', image: 'https://img.appledb.dev/device@256/iPhone17,2/Natural%20Titanium.png' },
     ];
     await Product.insertMany(products);
     console.log('Products created successfully.');
