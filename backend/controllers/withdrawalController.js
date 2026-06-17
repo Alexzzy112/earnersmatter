@@ -11,45 +11,80 @@ const createWithdrawal = async (req, res) => {
     const settingsMap = {};
     for (const s of settings) settingsMap[s.key] = s.value;
 
-    const withdrawalDays = settingsMap.withdrawalDays || '1,5';
-    const daysArray = String(withdrawalDays).split(',').map(Number);
-    const today = new Date().getDay();
-    if (!daysArray.includes(today)) {
-      return res.status(400).json({ success: false, message: 'Withdrawals are not available today' });
-    }
-
-    const { amount, paymentMethod, accountDetails } = req.body;
+    const { amount, paymentMethod, accountDetails, withdrawalType } = req.body;
     const parsedAmount = Number(amount);
+    const type = withdrawalType === 'referral_bonus' ? 'referral_bonus' : 'daily_task';
 
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ success: false, message: 'Valid amount is required' });
     }
 
-    const minWithdrawal = Number(settingsMap.minWithdrawal) || 0;
-    const maxWithdrawal = Number(settingsMap.maxWithdrawal) || Infinity;
-
-    if (parsedAmount < minWithdrawal) {
-      return res.status(400).json({ success: false, message: `Minimum withdrawal amount is ₦${minWithdrawal.toLocaleString()}` });
-    }
-    if (parsedAmount > maxWithdrawal) {
-      return res.status(400).json({ success: false, message: `Maximum withdrawal amount is ₦${maxWithdrawal.toLocaleString()}` });
-    }
+    const chargeRate = Number(settingsMap.withdrawalCharge) || 5;
+    const charge = helpers.calculateWithdrawalCharge(parsedAmount, chargeRate / 100);
 
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    if (type === 'daily_task') {
+      const minWithdrawal = 5000;
+      if (parsedAmount < minWithdrawal) {
+        return res.status(400).json({
+          success: false,
+          message: `Minimum withdrawal for Daily Task earnings is ₦${minWithdrawal.toLocaleString()}`,
+        });
+      }
+
+      const daysArray = [1, 5];
+      const today = new Date().getDay();
+      if (!daysArray.includes(today)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Daily Task withdrawals are only available on Monday and Friday',
+        });
+      }
+    } else {
+      const minWithdrawal = 2000;
+      if (parsedAmount < minWithdrawal) {
+        return res.status(400).json({
+          success: false,
+          message: `Minimum withdrawal for Referral Bonus is ₦${minWithdrawal.toLocaleString()}`,
+        });
+      }
+
+      const hour = new Date().getHours();
+      if (hour < 7 || hour >= 12) {
+        return res.status(400).json({
+          success: false,
+          message: 'Referral Bonus withdrawals are only available from 7:00 AM to 12:00 PM daily',
+        });
+      }
+
+      const totalReferralWithdrawn = await Withdrawal.aggregate([
+        { $match: { userId: user._id, withdrawalType: 'referral_bonus', status: { $in: ['pending', 'approved', 'completed'] } } },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ]);
+      const usedReferral = totalReferralWithdrawn.length > 0 ? totalReferralWithdrawn[0].total : 0;
+      const availableReferral = (user.referralEarnings || 0) - usedReferral;
+
+      if (parsedAmount > availableReferral) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient referral bonus balance. Available: ₦${availableReferral.toLocaleString()}`,
+        });
+      }
+    }
+
     if (user.walletBalance < parsedAmount) {
       return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
     }
-
-    const chargeRate = Number(settingsMap.withdrawalCharge) || 5;
-    const charge = helpers.calculateWithdrawalCharge(parsedAmount, chargeRate / 100);
 
     const withdrawal = await Withdrawal.create({
       userId: req.user._id,
       amount: parsedAmount,
       charge,
+      withdrawalType: type,
       paymentMethod,
       accountDetails,
     });
@@ -70,7 +105,7 @@ const createWithdrawal = async (req, res) => {
       action: 'withdrawal_created',
       entityType: 'Withdrawal',
       entityId: withdrawal._id,
-      details: { amount: parsedAmount, charge, paymentMethod },
+      details: { amount: parsedAmount, charge, paymentMethod, withdrawalType: type },
       req,
     });
 

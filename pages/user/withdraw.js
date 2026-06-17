@@ -1,13 +1,10 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { withdrawalAPI, authAPI, settingsAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { FiArrowUpRight, FiRefreshCw, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { FiArrowUpRight, FiRefreshCw, FiAlertCircle, FiCheckCircle, FiInfo, FiClock, FiCalendar } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-
-const WITHDRAWAL_DAYS = [1, 5];
-const DAY_NAMES = { 1: 'Monday', 5: 'Friday' };
 
 const statusBadge = (status) => {
   const map = {
@@ -20,9 +17,21 @@ const statusBadge = (status) => {
   return <span className={map[status] || 'badge badge-neutral'}>{status}</span>;
 };
 
-const paymentMethods = [
-  { value: 'bank', label: 'Bank Transfer' },
+const BANKS = [
+  'Opay',
+  'Moniepoint',
+  'Palmpay',
+  'Kuda',
+  'UBA',
+  'Access Bank',
+  'First Bank',
+  'Unity Bank',
+  'GT Bank',
+  'Smartcash',
 ];
+
+const WITHDRAWAL_DAYS = [1, 5];
+const DAY_NAMES = { 1: 'Monday', 5: 'Friday' };
 
 export default function WithdrawPage() {
   const [withdrawals, setWithdrawals] = useState([]);
@@ -31,22 +40,28 @@ export default function WithdrawPage() {
   const [savingAccount, setSavingAccount] = useState(false);
   const [error, setError] = useState(null);
   const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('bank');
   const [accountDetails, setAccountDetails] = useState('');
   const [validation, setValidation] = useState({});
   const [chargeRate, setChargeRate] = useState(0.05);
-  const [minWithdrawal, setMinWithdrawal] = useState(2500);
 
+  const [withdrawalType, setWithdrawalType] = useState('daily_task');
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
 
   const today = new Date().getDay();
+  const currentHour = new Date().getHours();
   const isAllowedDay = WITHDRAWAL_DAYS.includes(today);
+  const isReferralTime = currentHour >= 7 && currentHour < 12;
 
   const numericAmount = parseFloat(amount) || 0;
   const charge = numericAmount * chargeRate;
   const netAmount = numericAmount - charge;
+
+  const isDailyTask = withdrawalType === 'daily_task';
+  const minWithdrawal = isDailyTask ? 5000 : 2000;
+
+  const canSubmit = isDailyTask ? isAllowedDay : isReferralTime;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,7 +81,6 @@ export default function WithdrawPage() {
         }
         const s = settingsRes.data || {};
         if (s.chargeRate) setChargeRate(Number(s.chargeRate));
-        if (s.minWithdrawal) setMinWithdrawal(Number(s.minWithdrawal));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load withdrawal data');
       } finally {
@@ -99,10 +113,21 @@ export default function WithdrawPage() {
 
   const validate = () => {
     const errors = {};
-    if (!isAllowedDay) errors.day = 'Withdrawals are only available on Monday and Friday';
-    if (!amount || isNaN(numericAmount) || numericAmount <= 0) errors.amount = 'Please enter a valid amount';
-    else if (numericAmount < minWithdrawal) errors.amount = `Minimum withdrawal is ₦${minWithdrawal.toLocaleString()}`;
-    if (!accountDetails.trim()) errors.accountDetails = 'Please save your bank account details first';
+    if (!canSubmit) {
+      if (isDailyTask) {
+        errors.day = 'Daily Task withdrawals are only available on Monday and Friday';
+      } else {
+        errors.day = 'Referral Bonus withdrawals are only available from 7:00 AM to 12:00 PM daily';
+      }
+    }
+    if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
+      errors.amount = 'Please enter a valid amount';
+    } else if (numericAmount < minWithdrawal) {
+      errors.amount = `Minimum withdrawal is ₦${minWithdrawal.toLocaleString()}`;
+    }
+    if (!accountDetails.trim()) {
+      errors.accountDetails = 'Please save your bank account details first';
+    }
     setValidation(errors);
     return Object.keys(errors).length === 0;
   };
@@ -113,7 +138,12 @@ export default function WithdrawPage() {
 
     setSubmitting(true);
     try {
-      await withdrawalAPI.create({ amount: numericAmount, paymentMethod, accountDetails });
+      await withdrawalAPI.create({
+        amount: numericAmount,
+        paymentMethod: 'bank',
+        accountDetails,
+        withdrawalType,
+      });
       toast.success('Withdrawal request submitted successfully!');
       setAmount('');
 
@@ -126,14 +156,13 @@ export default function WithdrawPage() {
     }
   };
 
-  const nextWithdrawalDay = useMemo(() => {
+  const nextWithdrawalDay = () => {
     const days = [1, 5];
-    const today = new Date().getDay();
     for (const d of days) {
       if (d > today) return DAY_NAMES[d];
     }
     return DAY_NAMES[days[0]];
-  }, []);
+  };
 
   if (loading) return <DashboardLayout><LoadingSpinner text="Loading withdrawals..." /></DashboardLayout>;
   if (error) return (
@@ -155,19 +184,31 @@ export default function WithdrawPage() {
           <p className="text-dark-400 text-sm mt-1">Request a withdrawal from your wallet</p>
         </div>
 
-        {!isAllowedDay && (
+        {/* Withdrawal Type Info */}
+        {withdrawalType === 'daily_task' && !isAllowedDay && (
           <div className="flex items-start gap-3 p-4 bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl">
             <FiAlertCircle size={20} className="text-warning-500 mt-0.5 shrink-0" />
             <div>
-              <h3 className="font-semibold text-warning-700 dark:text-warning-400 text-sm">Withdrawals Unavailable Today</h3>
+              <h3 className="font-semibold text-warning-700 dark:text-warning-400 text-sm">Daily Task Withdrawal Unavailable Today</h3>
               <p className="text-sm text-warning-600 dark:text-warning-300 mt-1">
-                Withdrawals can only be processed on Monday and Friday. Next available day: {nextWithdrawalDay}.
+                Daily Task withdrawals can only be processed on Monday and Friday. Next available day: {nextWithdrawalDay()}.
+              </p>
+            </div>
+          </div>
+        )}
+        {withdrawalType === 'referral_bonus' && !isReferralTime && (
+          <div className="flex items-start gap-3 p-4 bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl">
+            <FiAlertCircle size={20} className="text-warning-500 mt-0.5 shrink-0" />
+            <div>
+              <h3 className="font-semibold text-warning-700 dark:text-warning-400 text-sm">Referral Bonus Withdrawal Window Closed</h3>
+              <p className="text-sm text-warning-600 dark:text-warning-300 mt-1">
+                Referral Bonus withdrawals are only available from 7:00 AM to 12:00 PM (noon) daily. Please come back during these hours.
               </p>
             </div>
           </div>
         )}
 
-        {/* Bank Account Management - Always Available */}
+        {/* Bank Account Management */}
         <div className="card p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
@@ -175,7 +216,7 @@ export default function WithdrawPage() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-dark-900 dark:text-white">Withdrawal Account</h2>
-              <p className="text-xs text-dark-400">Save your bank account details (available any day)</p>
+              <p className="text-xs text-dark-400">Select your bank and enter your account details (saved for future withdrawals)</p>
             </div>
           </div>
 
@@ -183,13 +224,16 @@ export default function WithdrawPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-medium text-dark-500 dark:text-dark-400 mb-1">Bank Name</label>
-                <input
-                  type="text"
+                <select
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  placeholder="e.g. GTBank"
                   className="input-field"
-                />
+                >
+                  <option value="">Select a bank</option>
+                  {BANKS.map((bank) => (
+                    <option key={bank} value={bank}>{bank}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-dark-500 dark:text-dark-400 mb-1">Account Number</label>
@@ -221,18 +265,89 @@ export default function WithdrawPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Withdrawal Form */}
           <div className="card p-6">
-            <h2 className="text-lg font-semibold text-dark-900 dark:text-white mb-4">Withdrawal Request</h2>
+            <h2 className="text-lg font-semibold text-dark-900 dark:text-white mb-4">Request Withdrawal</h2>
 
-            {/* Schedule info */}
-            <div className="mb-4 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
-              <p className="text-xs text-primary-700 dark:text-primary-400 font-medium">
-                Withdrawal Days: Monday, Friday
-              </p>
+            {/* Withdrawal Type Tabs */}
+            <div className="flex gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => { setWithdrawalType('daily_task'); setValidation({}); }}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-colors ${
+                  withdrawalType === 'daily_task'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-dark-100 dark:bg-dark-700 text-dark-600 dark:text-dark-300'
+                }`}
+              >
+                Daily Task Earnings
+              </button>
+              <button
+                type="button"
+                onClick={() => { setWithdrawalType('referral_bonus'); setValidation({}); }}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-colors ${
+                  withdrawalType === 'referral_bonus'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-dark-100 dark:bg-dark-700 text-dark-600 dark:text-dark-300'
+                }`}
+              >
+                Referral Bonus
+              </button>
+            </div>
+
+            {/* Write-up for current withdrawal type */}
+            {withdrawalType === 'daily_task' ? (
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-blue-700 dark:text-blue-400">
+                  <FiInfo size={16} />
+                  Daily Task Earnings — Withdrawal Rules
+                </div>
+                <ul className="text-xs text-blue-600 dark:text-blue-300 space-y-1 ml-5 list-disc">
+                  <li>Minimum withdrawal: <strong>₦5,000</strong></li>
+                  <li>Available on: <strong>Monday</strong> and <strong>Friday</strong> only</li>
+                  <li>Withdraw the earnings you have accumulated from completing daily tasks</li>
+                  <li>Your wallet balance must be at least the withdrawal amount</li>
+                </ul>
+              </div>
+            ) : (
+              <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-green-700 dark:text-green-400">
+                  <FiInfo size={16} />
+                  Referral Bonus — Withdrawal Rules
+                </div>
+                <ul className="text-xs text-green-600 dark:text-green-300 space-y-1 ml-5 list-disc">
+                  <li>Minimum withdrawal: <strong>₦2,000</strong></li>
+                  <li>Available <strong>every day</strong> from <strong>7:00 AM to 12:00 PM</strong> (noon)</li>
+                  <li>Withdraw commissions earned from referring new members</li>
+                  <li>You can only withdraw up to your available referral bonus balance</li>
+                </ul>
+              </div>
+            )}
+
+            {/* Schedule indicator */}
+            <div className="mb-4 p-2.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center gap-2">
+              {withdrawalType === 'daily_task' ? (
+                <>
+                  <FiCalendar size={14} className="text-primary-600 dark:text-primary-400" />
+                  <p className="text-xs text-primary-700 dark:text-primary-400 font-medium">
+                    Withdrawal Days: <strong>Monday &amp; Friday</strong>
+                    {isAllowedDay && <span className="text-success-500 ml-1">— Available Today</span>}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <FiClock size={14} className="text-primary-600 dark:text-primary-400" />
+                  <p className="text-xs text-primary-700 dark:text-primary-400 font-medium">
+                    Withdrawal Hours: <strong>7:00 AM — 12:00 PM</strong> (Daily)
+                    {isReferralTime && <span className="text-success-500 ml-1">— Open Now</span>}
+                  </p>
+                </>
+              )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">Amount</label>
+                <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+                  Amount (Min: ₦{minWithdrawal.toLocaleString()})
+                </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400 font-medium">₦</span>
                   <input
@@ -261,19 +376,6 @@ export default function WithdrawPage() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">Payment Method</label>
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="input-field"
-                >
-                  {paymentMethods.map((pm) => (
-                    <option key={pm.value} value={pm.value}>{pm.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
                   Account Details
                 </label>
@@ -286,11 +388,11 @@ export default function WithdrawPage() {
                 />
                 {validation.accountDetails && <p className="text-xs text-danger-500 mt-1">{validation.accountDetails}</p>}
                 <p className="text-xs text-dark-400 mt-1">
-                  Your saved bank account details are used for withdrawal
+                  Your saved bank account will be used for this withdrawal
                 </p>
               </div>
 
-              <button type="submit" className="btn-danger w-full" disabled={submitting || !isAllowedDay}>
+              <button type="submit" className="btn-danger w-full" disabled={submitting || !canSubmit}>
                 {submitting ? 'Processing...' : <><FiArrowUpRight size={16} /> Submit Withdrawal</>}
               </button>
             </form>
@@ -307,6 +409,7 @@ export default function WithdrawPage() {
                   <thead>
                     <tr>
                       <th>Date</th>
+                      <th>Type</th>
                       <th>Amount</th>
                       <th>Charge</th>
                       <th>Net</th>
@@ -318,6 +421,15 @@ export default function WithdrawPage() {
                       <tr key={wd._id}>
                         <td className="text-xs text-dark-400 whitespace-nowrap">
                           {new Date(wd.createdAt || wd.date).toLocaleDateString()}
+                        </td>
+                        <td className="text-xs">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            wd.withdrawalType === 'referral_bonus'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                          }`}>
+                            {wd.withdrawalType === 'referral_bonus' ? 'Referral' : 'Daily Task'}
+                          </span>
                         </td>
                         <td className="font-medium">₦{Number(wd.amount).toLocaleString()}</td>
                         <td className="text-danger-500 text-sm">-₦{Number(wd.charge || wd.amount * chargeRate).toFixed(2)}</td>

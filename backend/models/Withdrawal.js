@@ -16,6 +16,11 @@ const withdrawalSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    withdrawalType: {
+      type: String,
+      enum: ['referral_bonus', 'daily_task'],
+      default: 'daily_task',
+    },
     paymentMethod: {
       type: String,
     },
