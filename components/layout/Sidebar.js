@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import {
   FiHome, FiDollarSign, FiArrowUpRight, FiPackage, FiTrendingUp,
   FiBarChart2, FiUsers, FiList, FiBell, FiUser, FiCreditCard,
-  FiPieChart, FiSettings, FiShield, FiX, FiMessageCircle
+  FiPieChart, FiSettings, FiShield, FiX, FiMessageCircle, FiCheckSquare
 } from 'react-icons/fi';
 
 const userLinks = [
@@ -28,6 +28,7 @@ const adminLinks = [
   { href: '/admin/deposits', label: 'Deposits', icon: FiDollarSign },
   { href: '/admin/withdrawals', label: 'Withdrawals', icon: FiArrowUpRight },
   { href: '/admin/products', label: 'Products', icon: FiPackage },
+  { href: '/admin/tasks', label: 'Tasks', icon: FiCheckSquare },
   { href: '/admin/investments', label: 'Investments', icon: FiTrendingUp },
   { href: '/admin/earnings', label: 'Earnings', icon: FiBarChart2 },
   { href: '/admin/payment-accounts', label: 'Payment Accounts', icon: FiCreditCard },
