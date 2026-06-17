@@ -4,6 +4,7 @@ import { dashboardAPI, investmentAPI, walletAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatsCard from '@/components/shared/StatsCard';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import WelcomePopup from '@/components/shared/WelcomePopup';
 import { FiDollarSign, FiTrendingUp, FiPackage, FiArrowUpRight, FiRefreshCw, FiBriefcase, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
@@ -88,6 +89,13 @@ export default function UserDashboard() {
           white-space: nowrap;
           animation: marquee 60s linear infinite;
           padding-left: 100%;
+        }
+        @keyframes bounceSlow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-slow {
+          animation: bounceSlow 2s ease-in-out infinite;
         }
       `}</style>
 
@@ -216,6 +224,7 @@ export default function UserDashboard() {
           </div>
         </div>
       </div>
+      <WelcomePopup />
     </DashboardLayout>
   );
 }
