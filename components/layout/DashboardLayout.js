@@ -166,10 +166,38 @@ export default function DashboardLayout({ children }) {
         </header>
 
         {/* Page content */}
-        <main className="p-4 md:p-6 lg:p-8">
+        <main className="p-4 md:p-6 lg:p-8 pb-20 lg:pb-8">
           {children}
         </main>
       </div>
+
+      {/* Bottom bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-dark-900 border-t border-dark-200 dark:border-dark-700 lg:hidden">
+        <div className="flex items-center justify-around px-2 py-1">
+          {[
+            { href: '/user/products', label: 'Products', icon: FiPackage },
+            { href: '/user/referrals', label: 'Referral', icon: FiUsers },
+            { href: '/user/profile', label: 'Profile', icon: FiUser },
+            { href: '/user/wallet', label: 'Wallet', icon: FiDollarSign },
+          ].map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  isActive
+                    ? 'text-primary-600 dark:text-primary-400'
+                    : 'text-dark-400 dark:text-dark-500'
+                }`}
+              >
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
