@@ -107,7 +107,7 @@ export default function DashboardLayout({ children }) {
           })}
 
           <div className="pt-4 mt-4 border-t border-dark-200 dark:border-dark-700">
-            <div className="px-3 py-2 mb-2">
+            <div className="px-3 py-2">
               <p className="text-xs text-dark-400 dark:text-dark-500 font-medium">
                 Signed in as
               </p>
@@ -115,13 +115,6 @@ export default function DashboardLayout({ children }) {
                 {user?.username || user?.email || 'User'}
               </p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all"
-            >
-              <FiLogOut size={18} />
-              Sign Out
-            </button>
           </div>
         </nav>
       </aside>
@@ -161,6 +154,13 @@ export default function DashboardLayout({ children }) {
                   {user?.username || user?.email || 'User'}
                 </span>
               </Link>
+              <button
+                onClick={handleLogout}
+                className="p-2 text-dark-400 hover:text-danger-500 rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors"
+                title="Sign Out"
+              >
+                <FiLogOut size={18} />
+              </button>
             </div>
           </div>
         </header>
