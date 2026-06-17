@@ -17,6 +17,7 @@ const adminSettingsController = require('../../controllers/admin/adminSettingsCo
 const adminNotificationController = require('../../controllers/admin/adminNotificationController');
 const adminTaskController = require('../../controllers/admin/adminTaskController');
 const adminReseedController = require('../../controllers/admin/adminReseedController');
+const adminResetProductsController = require('../../controllers/admin/adminResetProductsController');
 
 router.use(auth, adminMiddleware);
 
@@ -53,6 +54,7 @@ router.post('/products', adminProductController.createProduct);
 router.put('/products/:id', adminProductController.updateProduct);
 router.delete('/products/:id', adminProductController.deleteProduct);
 router.put('/products/:id/toggle', adminProductController.toggleProductStatus);
+router.post('/products/reset', adminResetProductsController.resetProducts);
 
 // Payment Accounts
 router.get('/payment-accounts', adminPaymentAccountController.getAllAccounts);

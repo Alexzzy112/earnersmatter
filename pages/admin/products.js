@@ -8,7 +8,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import StatusBadge from '@/components/shared/StatusBadge';
 import toast from 'react-hot-toast';
 import {
-  FiGrid, FiPlus, FiEdit2, FiTrash2, FiToggleLeft, FiToggleRight, FiPackage
+  FiGrid, FiPlus, FiEdit2, FiTrash2, FiToggleLeft, FiToggleRight, FiPackage, FiRefreshCw
 } from 'react-icons/fi';
 
 const emptyProduct = { name: '', description: '', price: '', dailyEarnings: '', duration: '', minPurchase: '', maxPurchase: '', status: 'active', image: '' };
@@ -21,6 +21,7 @@ export default function AdminProducts() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [resetting, setResetting] = useState(false);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -93,9 +94,28 @@ export default function AdminProducts() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Product Management</h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Create and manage investment products</p>
           </div>
-          <button onClick={openCreate} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700">
-            <FiPlus className="w-4 h-4" /> Create Product
-          </button>
+          <div className="flex gap-2">
+            <button onClick={openCreate} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700">
+              <FiPlus className="w-4 h-4" /> Create Product
+            </button>
+            <button
+              onClick={async () => {
+                if (!window.confirm('Reset all products to default? This will delete existing products.')) return;
+                setResetting(true);
+                try {
+                  await adminAPI.resetProducts();
+                  toast.success('Products reset successfully');
+                  fetchProducts();
+                } catch (err) {
+                  toast.error(err.response?.data?.message || 'Reset failed');
+                } finally { setResetting(false); }
+              }}
+              disabled={resetting}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50"
+            >
+              <FiRefreshCw className={`w-4 h-4 ${resetting ? 'animate-spin' : ''}`} /> Reset
+            </button>
+          </div>
         </div>
 
         {loading ? (
