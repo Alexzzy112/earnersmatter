@@ -11,9 +11,43 @@ import toast from 'react-hot-toast';
 
 const medals = ['🥇', '🥈', '🥉'];
 
+const fakeTopInvestors = [
+  { username: 'Adewale O.', totalInvestments: 25000000, totalEarnings: 8500000, referredCount: 412, dailyEarnings: 350000 },
+  { username: 'Chinwe M.', totalInvestments: 18500000, totalEarnings: 6200000, referredCount: 289, dailyEarnings: 245000 },
+  { username: 'Ibrahim D.', totalInvestments: 12000000, totalEarnings: 4100000, referredCount: 198, dailyEarnings: 180000 },
+  { username: 'Folake A.', totalInvestments: 8500000, totalEarnings: 2900000, referredCount: 156, dailyEarnings: 125000 },
+  { username: 'Nnamdi K.', totalInvestments: 5200000, totalEarnings: 1800000, referredCount: 94, dailyEarnings: 85000 },
+];
+
+const fakeWeeklyGrowing = [
+  { username: 'Tunde B.', totalEarnings: 2100000, growth: 320, joinedAt: new Date('2025-08-15').toISOString() },
+  { username: 'Amara S.', totalEarnings: 1500000, growth: 280, joinedAt: new Date('2025-09-01').toISOString() },
+  { username: 'Kayode R.', totalEarnings: 980000, growth: 245, joinedAt: new Date('2025-07-20').toISOString() },
+  { username: 'Funmi L.', totalEarnings: 750000, growth: 210, joinedAt: new Date('2025-10-05').toISOString() },
+  { username: 'Chuka E.', totalEarnings: 520000, growth: 185, joinedAt: new Date('2025-06-10').toISOString() },
+];
+
+const mergeTop = (apiData) => {
+  const combined = fakeTopInvestors.map((f, i) => ({ ...f, rank: i + 1 }));
+  const startRank = combined.length + 1;
+  (apiData || []).forEach((item, i) => {
+    combined.push({ ...item, rank: startRank + i });
+  });
+  return combined;
+};
+
+const mergeGrowing = (apiData) => {
+  const combined = fakeWeeklyGrowing.map((f, i) => ({ ...f, rank: i + 1 }));
+  const startRank = combined.length + 1;
+  (apiData || []).forEach((item, i) => {
+    combined.push({ ...item, rank: startRank + i });
+  });
+  return combined;
+};
+
 export default function LeaderboardPage() {
-  const [topInvestors, setTopInvestors] = useState([]);
-  const [weeklyGrowing, setWeeklyGrowing] = useState([]);
+  const [topInvestors, setTopInvestors] = useState(mergeTop([]));
+  const [weeklyGrowing, setWeeklyGrowing] = useState(mergeGrowing([]));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,8 +57,8 @@ export default function LeaderboardPage() {
           leaderboardAPI.getTopInvestors(),
           leaderboardAPI.getWeeklyGrowing(),
         ]);
-        setTopInvestors(invRes.data || []);
-        setWeeklyGrowing(growRes.data || []);
+        setTopInvestors(mergeTop(invRes.data || []));
+        setWeeklyGrowing(mergeGrowing(growRes.data || []));
       } catch (err) {
         toast.error('Failed to load leaderboard');
       } finally {
@@ -74,7 +108,7 @@ export default function LeaderboardPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{inv.username}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {inv.referredCount || 0} referral{inv.referredCount !== 1 ? 's' : ''}
+                      {inv.referredCount || 0} referral{inv.referredCount !== 1 ? 's' : ''} • ₦{inv.dailyEarnings?.toLocaleString() || '0'}/day
                     </p>
                   </div>
                   <div className="text-right">
