@@ -3,11 +3,11 @@ const Task = require('../models/Task');
 const Setting = require('../models/Setting');
 
 const defaultTemplates = [
-  { title: 'Sponsored: Earn More Today', description: 'Check out this exclusive investment opportunity and grow your portfolio faster.', type: 'ad' },
-  { title: 'Watch & Earn: Platform Tutorial', description: 'Watch our quick tutorial on maximizing your daily earnings.', type: 'watch' },
-  { title: 'Click & Earn: Market Update', description: 'Click to view today\'s market update and stay informed about your investments.', type: 'click' },
-  { title: 'Sponsored: Daily Tips', description: 'Read our daily investment tips to make smarter decisions.', type: 'click' },
-  { title: 'Video: Success Stories', description: 'Watch how our top investors are maximizing their returns every day.', type: 'watch' },
+  { title: 'Daily Task', description: 'Complete this quick task to earn your daily reward and keep your investment growing!', type: 'ad' },
+  { title: 'Daily Task', description: 'Stay consistent and watch your portfolio grow — one task at a time!', type: 'ad' },
+  { title: 'Daily Task', description: 'Your daily earnings are waiting. Complete this task to claim them now!', type: 'ad' },
+  { title: 'Daily Task', description: 'Every task brings you closer to your financial goals. Keep going!', type: 'ad' },
+  { title: 'Daily Task', description: 'Success is built on small daily habits. Complete this task and level up!', type: 'ad' },
 ];
 
 const generateDailyTasks = async () => {

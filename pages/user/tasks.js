@@ -6,8 +6,7 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import StatsCard from '@/components/shared/StatsCard';
 import EmptyState from '@/components/shared/EmptyState';
 import {
-  FiCheckCircle, FiClock, FiPlay, FiLock, FiRefreshCw,
-  FiExternalLink, FiDollarSign, FiAward, FiStar, FiArrowRight
+  FiCheckCircle, FiClock, FiPlay, FiLock, FiDollarSign, FiAward, FiStar, FiExternalLink
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
@@ -21,8 +20,6 @@ export default function TasksPage() {
   });
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
-  const [showAdModal, setShowAdModal] = useState(null);
-  const [adViewed, setAdViewed] = useState(false);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -42,11 +39,16 @@ export default function TasksPage() {
     setActionLoading(task._id);
     try {
       const res = await taskAPI.start(task._id);
-      setAdViewed(false);
-      setShowAdModal({
-        ...task,
-        linkUrl: res.data?.linkUrl || task.linkUrl,
-      });
+      const linkUrl = res.data?.linkUrl || task.linkUrl;
+      if (linkUrl) {
+        window.open(linkUrl, '_blank', 'noopener,noreferrer');
+      }
+      setTasks((prev) =>
+        prev.map((t) =>
+          t._id === task._id ? { ...t, status: 'started' } : t
+        )
+      );
+      setMeta((prev) => ({ ...prev, started: prev.started + 1 }));
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to start task');
     } finally {
@@ -54,24 +56,23 @@ export default function TasksPage() {
     }
   };
 
-  const hasAdLink = showAdModal?.linkUrl && showAdModal.linkUrl !== '#' && showAdModal.linkUrl !== '';
-
-  const handleOpenAd = () => {
-    if (hasAdLink) {
-      window.open(showAdModal.linkUrl, '_blank', 'noopener,noreferrer');
-    }
-    setAdViewed(true);
-  };
-
-  const handleReceiveReward = async () => {
-    if (!showAdModal) return;
-    setActionLoading('receive');
+  const handleReceiveReward = async (taskId) => {
+    setActionLoading(taskId);
     try {
-      const res = await taskAPI.receiveReward(showAdModal._id);
+      const res = await taskAPI.receiveReward(taskId);
       toast.success(res.message || 'Reward credited!');
-      setShowAdModal(null);
-      setAdViewed(false);
-      fetchTasks();
+      setTasks((prev) =>
+        prev.map((t) =>
+          t._id === taskId ? { ...t, status: 'completed' } : t
+        )
+      );
+      const completedCount = (tasks.filter((t) => t.status === 'completed').length) + 1;
+      setMeta((prev) => ({
+        ...prev,
+        completed: completedCount,
+        started: Math.max(0, prev.started - 1),
+        allCompleted: completedCount >= TASKS_PER_DAY,
+      }));
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to claim reward');
     } finally {
@@ -80,7 +81,6 @@ export default function TasksPage() {
   };
 
   const completedCount = tasks.filter((t) => t.status === 'completed').length;
-  const startedCount = tasks.filter((t) => t.status === 'started').length;
   const progressPercent = meta.total > 0 ? Math.round((completedCount / TASKS_PER_DAY) * 100) : 0;
 
   if (loading) return <DashboardLayout><LoadingSpinner /></DashboardLayout>;
@@ -198,7 +198,7 @@ export default function TasksPage() {
                           <div className="mt-2">
                             <span className="text-xs text-blue-500 flex items-center gap-1">
                               <FiPlay size={10} />
-                              Ad viewing started — click &quot;Receive Reward&quot;
+                              Ad opened — click &quot;Receive Reward&quot; to claim
                             </span>
                           </div>
                         )}
@@ -210,10 +210,15 @@ export default function TasksPage() {
                           </span>
                         ) : isStarted ? (
                           <button
-                            onClick={() => setShowAdModal(task)}
+                            onClick={() => handleReceiveReward(task._id)}
+                            disabled={actionLoading === task._id}
                             className="btn-primary text-xs px-3 py-2"
                           >
-                            <FiArrowRight size={12} className="inline mr-1" /> Claim
+                            {actionLoading === task._id ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <><FiExternalLink size={12} className="inline mr-1" /> Receive Reward</>
+                            )}
                           </button>
                         ) : (
                           <button
@@ -244,100 +249,6 @@ export default function TasksPage() {
               )}
             </div>
           </>
-        )}
-
-        {showAdModal && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
-            onClick={() => {
-              if (adViewed) setShowAdModal(null);
-            }}
-          >
-            <div
-              className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-scale-in"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 p-6 text-center">
-                <div className="text-4xl mb-2">📢</div>
-                <h3 className="text-lg font-bold text-white">{showAdModal.title}</h3>
-                <p className="text-blue-100 text-sm mt-1">{showAdModal.description}</p>
-              </div>
-
-              <div className="p-6 space-y-4">
-                {!adViewed ? (
-                  <>
-                    {hasAdLink ? (
-                      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-center">
-                        <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">
-                          Step 1: Click the button below to view the ad
-                        </p>
-                        <p className="text-xs text-amber-500 dark:text-amber-400 mt-1">
-                          A new tab will open. After viewing, come back to claim your reward.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
-                        <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                          Ad link not configured yet
-                        </p>
-                        <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">
-                          Click &quot;Mark as Viewed&quot; to continue and claim your reward.
-                        </p>
-                      </div>
-                    )}
-                    <button
-                      onClick={handleOpenAd}
-                      className="w-full btn-primary py-3 text-base"
-                    >
-                      <FiExternalLink size={18} className="mr-2" />
-                      {hasAdLink ? 'View Ad & Earn' : 'Mark as Viewed'}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 text-center">
-                      <FiCheckCircle size={28} className="mx-auto text-emerald-500 mb-2" />
-                      <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">
-                        {hasAdLink ? 'Ad viewed successfully!' : 'Ready!'}
-                      </p>
-                      <p className="text-xs text-emerald-500 dark:text-emerald-400 mt-1">
-                        Step 2: Click below to receive your reward
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Your Reward
-                      </span>
-                      <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                        +₦{(showAdModal.reward || 0).toLocaleString()}
-                      </span>
-                    </div>
-                    <button
-                      onClick={handleReceiveReward}
-                      disabled={actionLoading === 'receive'}
-                      className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25"
-                    >
-                      {actionLoading === 'receive' ? (
-                        <LoadingSpinner size="sm" />
-                      ) : (
-                        <><FiDollarSign size={18} /> Receive Reward</>
-                      )}
-                    </button>
-                  </>
-                )}
-
-                <button
-                  onClick={() => {
-                    setShowAdModal(null);
-                    setAdViewed(false);
-                  }}
-                  className="w-full text-sm text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 py-2 transition-colors"
-                >
-                  {adViewed ? 'Close' : 'Cancel'}
-                </button>
-              </div>
-            </div>
-          </div>
         )}
       </div>
     </DashboardLayout>
