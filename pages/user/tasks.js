@@ -1,20 +1,30 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { taskAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import StatsCard from '@/components/shared/StatsCard';
-import { FiCheckCircle, FiClock, FiPlay, FiLock, FiRefreshCw, FiExternalLink } from 'react-icons/fi';
+import EmptyState from '@/components/shared/EmptyState';
+import {
+  FiCheckCircle, FiClock, FiPlay, FiLock, FiRefreshCw,
+  FiExternalLink, FiDollarSign, FiAward, FiStar, FiArrowRight
+} from 'react-icons/fi';
 import toast from 'react-hot-toast';
+
+const TASKS_PER_DAY = 5;
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState([]);
-  const [meta, setMeta] = useState({ total: 0, completed: 0, canEarn: 0, locked: false });
+  const [meta, setMeta] = useState({
+    total: 0, completed: 0, started: 0, perTaskReward: 0,
+    totalDailyEarnings: 0, canEarn: 0, locked: false, allCompleted: false,
+  });
   const [loading, setLoading] = useState(true);
-  const [completing, setCompleting] = useState(null);
-  const [showAd, setShowAd] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [showAdModal, setShowAdModal] = useState(null);
+  const [adViewed, setAdViewed] = useState(false);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const res = await taskAPI.getToday();
       setTasks(res.data || []);
@@ -24,29 +34,54 @@ export default function TasksPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchTasks(); }, []);
+  useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  const handleComplete = async (taskId) => {
-    setCompleting(taskId);
+  const handleStartEarns = async (task) => {
+    setActionLoading(task._id);
     try {
-      const res = await taskAPI.complete(taskId);
-      toast.success(res.message || 'Task completed!');
-      setShowAd(null);
-      fetchTasks();
+      const res = await taskAPI.start(task._id);
+      setAdViewed(false);
+      setShowAdModal({
+        ...task,
+        linkUrl: res.data?.linkUrl || task.linkUrl,
+      });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to complete task');
+      toast.error(err.response?.data?.message || 'Failed to start task');
     } finally {
-      setCompleting(null);
+      setActionLoading(null);
     }
   };
 
-  const handleViewAd = (task) => {
-    setShowAd(task);
+  const hasAdLink = showAdModal?.linkUrl && showAdModal.linkUrl !== '#' && showAdModal.linkUrl !== '';
+
+  const handleOpenAd = () => {
+    if (hasAdLink) {
+      window.open(showAdModal.linkUrl, '_blank', 'noopener,noreferrer');
+    }
+    setAdViewed(true);
   };
 
-  const completedCount = tasks.filter((t) => t.completed).length;
+  const handleReceiveReward = async () => {
+    if (!showAdModal) return;
+    setActionLoading('receive');
+    try {
+      const res = await taskAPI.receiveReward(showAdModal._id);
+      toast.success(res.message || 'Reward credited!');
+      setShowAdModal(null);
+      setAdViewed(false);
+      fetchTasks();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to claim reward');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const completedCount = tasks.filter((t) => t.status === 'completed').length;
+  const startedCount = tasks.filter((t) => t.status === 'started').length;
+  const progressPercent = meta.total > 0 ? Math.round((completedCount / TASKS_PER_DAY) * 100) : 0;
 
   if (loading) return <DashboardLayout><LoadingSpinner /></DashboardLayout>;
 
@@ -54,102 +89,252 @@ export default function TasksPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Daily Tasks</h1>
-          <p className="text-dark-400 text-sm mt-1">Complete tasks daily to earn rewards</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Daily Tasks</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+            Complete {TASKS_PER_DAY} tasks daily to claim your investment earnings
+          </p>
         </div>
 
         {meta.locked ? (
-          <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl p-6 text-center">
-            <FiLock size={40} className="mx-auto text-warning-400 mb-3" />
-            <h3 className="text-lg font-semibold text-dark-900 dark:text-white mb-1">Tasks Locked</h3>
-            <p className="text-dark-400 text-sm">Purchase a product to unlock daily earning tasks.</p>
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-8 text-center">
+            <FiLock size={48} className="mx-auto text-amber-400 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Active Investment</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+              Purchase an investment product to unlock daily tasks and start earning rewards.
+            </p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <StatsCard title="Available Tasks" value={meta.total} icon={FiClock} color="blue" />
-              <StatsCard title="Completed" value={`${completedCount}/${meta.total}`} icon={FiCheckCircle} color="green" />
-              <StatsCard title="Potential Earnings" value={`₦${(meta.canEarn || 0).toLocaleString()}`} icon={FiRefreshCw} color="yellow" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatsCard
+                title="Daily Earnings"
+                value={`₦${(meta.totalDailyEarnings || 0).toLocaleString()}`}
+                icon={FiDollarSign}
+                color="blue"
+              />
+              <StatsCard
+                title="Tasks Completed"
+                value={`${completedCount}/${TASKS_PER_DAY}`}
+                icon={FiCheckCircle}
+                color="green"
+              />
+              <StatsCard
+                title="Per Task Reward"
+                value={`₦${(meta.perTaskReward || 0).toLocaleString()}`}
+                icon={FiStar}
+                color="yellow"
+              />
+              <StatsCard
+                title="Today Earned"
+                value={`₦${((meta.perTaskReward || 0) * completedCount).toLocaleString()}`}
+                icon={FiAward}
+                color="purple"
+              />
+            </div>
+
+            {meta.allCompleted && (
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-5 text-center">
+                <FiAward size={36} className="mx-auto text-emerald-500 mb-2" />
+                <h3 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">
+                  All Tasks Completed!
+                </h3>
+                <p className="text-emerald-600 dark:text-emerald-400 text-sm mt-1">
+                  You&apos;ve earned ₦{((meta.perTaskReward || 0) * TASKS_PER_DAY).toLocaleString()} today. Come back tomorrow for more tasks.
+                </p>
+              </div>
+            )}
+
+            <div className="card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Daily Progress
+                </span>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  {completedCount}/{TASKS_PER_DAY}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${Math.min(progressPercent, 100)}%` }}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {tasks.map((task) => (
-                <div key={task._id} className={`card p-5 ${task.completed ? 'opacity-60' : ''}`}>
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-dark-900 dark:text-white text-sm">{task.title}</h3>
-                      <p className="text-dark-400 text-xs mt-1">{task.description}</p>
-                      <div className="flex items-center gap-3 mt-3">
-                        <span className="text-xs font-medium text-success-600 dark:text-success-400 bg-success-50 dark:bg-success-900/20 px-2 py-0.5 rounded">
-                          +₦{task.reward.toLocaleString()}
-                        </span>
-                        <span className="text-xs text-dark-400 capitalize">{task.type}</span>
+              {tasks.map((task, index) => {
+                const isNotStarted = task.status === 'not_started' || !task.status;
+                const isStarted = task.status === 'started';
+                const isCompleted = task.status === 'completed';
+
+                return (
+                  <div
+                    key={task._id}
+                    className={`card p-5 transition-all duration-200 ${
+                      isCompleted
+                        ? 'opacity-60 border-emerald-300 dark:border-emerald-700'
+                        : isStarted
+                          ? 'border-blue-300 dark:border-blue-700 ring-1 ring-blue-200 dark:ring-blue-800'
+                          : 'hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-400 font-bold text-sm">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{task.title}</h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-1 line-clamp-2">{task.description}</p>
+                        <div className="flex items-center gap-3 mt-3">
+                          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-0.5 rounded-full">
+                            +₦{(task.reward || 0).toLocaleString()}
+                          </span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500 capitalize flex items-center gap-1">
+                            <FiClock size={10} />
+                            {task.type}
+                          </span>
+                        </div>
+                        {isStarted && (
+                          <div className="mt-2">
+                            <span className="text-xs text-blue-500 flex items-center gap-1">
+                              <FiPlay size={10} />
+                              Ad viewing started — click &quot;Receive Reward&quot;
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0">
+                        {isCompleted ? (
+                          <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-full">
+                            <FiCheckCircle size={14} /> Done
+                          </span>
+                        ) : isStarted ? (
+                          <button
+                            onClick={() => setShowAdModal(task)}
+                            className="btn-primary text-xs px-3 py-2"
+                          >
+                            <FiArrowRight size={12} className="inline mr-1" /> Claim
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleStartEarns(task)}
+                            disabled={actionLoading === task._id}
+                            className="btn-primary text-xs px-3 py-2"
+                          >
+                            {actionLoading === task._id ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <><FiPlay size={12} className="inline mr-1" /> Start Earns</>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <div className="flex-shrink-0">
-                      {task.completed ? (
-                        <span className="flex items-center gap-1 text-xs text-success-500 font-medium">
-                          <FiCheckCircle /> Done
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleViewAd(task)}
-                          className="btn-primary text-xs px-3 py-1.5"
-                        >
-                          <FiPlay size={12} className="inline mr-1" /> Start
-                        </button>
-                      )}
-                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {tasks.length === 0 && (
-                <div className="col-span-full text-center py-12 text-dark-400">
-                  No tasks available today. Check back tomorrow!
+                <div className="col-span-full">
+                  <EmptyState
+                    icon={FiClock}
+                    title="No tasks available"
+                    description="Daily tasks will appear here once generated. Check back later."
+                  />
                 </div>
               )}
             </div>
           </>
         )}
 
-        {/* Ad View Modal */}
-        {showAd && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowAd(null)}>
-            <div className="bg-white dark:bg-dark-800 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              <div className="relative">
-                <img
-                  src={showAd.imageUrl || 'https://placehold.co/600x200/1a1a2e/e94560?text=Ad'}
-                  alt={showAd.title}
-                  className="w-full h-48 object-cover"
-                />
-                <button
-                  onClick={() => setShowAd(null)}
-                  className="absolute top-2 right-2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70"
-                >
-                  ✕
-                </button>
+        {showAdModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            onClick={() => {
+              if (adViewed) setShowAdModal(null);
+            }}
+          >
+            <div
+              className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-scale-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 p-6 text-center">
+                <div className="text-4xl mb-2">📢</div>
+                <h3 className="text-lg font-bold text-white">{showAdModal.title}</h3>
+                <p className="text-blue-100 text-sm mt-1">{showAdModal.description}</p>
               </div>
-              <div className="p-5">
-                <h3 className="text-lg font-semibold text-dark-900 dark:text-white">{showAd.title}</h3>
-                <p className="text-sm text-dark-400 mt-1">{showAd.description}</p>
-                {showAd.linkUrl && showAd.linkUrl !== '#' && (
-                  <a href={showAd.linkUrl} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-primary-500 hover:text-primary-600 mt-2">
-                    <FiExternalLink size={14} /> Learn More
-                  </a>
+
+              <div className="p-6 space-y-4">
+                {!adViewed ? (
+                  <>
+                    {hasAdLink ? (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-center">
+                        <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">
+                          Step 1: Click the button below to view the ad
+                        </p>
+                        <p className="text-xs text-amber-500 dark:text-amber-400 mt-1">
+                          A new tab will open. After viewing, come back to claim your reward.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
+                        <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                          Ad link not configured yet
+                        </p>
+                        <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">
+                          Click &quot;Mark as Viewed&quot; to continue and claim your reward.
+                        </p>
+                      </div>
+                    )}
+                    <button
+                      onClick={handleOpenAd}
+                      className="w-full btn-primary py-3 text-base"
+                    >
+                      <FiExternalLink size={18} className="mr-2" />
+                      {hasAdLink ? 'View Ad & Earn' : 'Mark as Viewed'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 text-center">
+                      <FiCheckCircle size={28} className="mx-auto text-emerald-500 mb-2" />
+                      <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">
+                        {hasAdLink ? 'Ad viewed successfully!' : 'Ready!'}
+                      </p>
+                      <p className="text-xs text-emerald-500 dark:text-emerald-400 mt-1">
+                        Step 2: Click below to receive your reward
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Your Reward
+                      </span>
+                      <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                        +₦{(showAdModal.reward || 0).toLocaleString()}
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleReceiveReward}
+                      disabled={actionLoading === 'receive'}
+                      className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25"
+                    >
+                      {actionLoading === 'receive' ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <><FiDollarSign size={18} /> Receive Reward</>
+                      )}
+                    </button>
+                  </>
                 )}
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-dark-200 dark:border-dark-700">
-                  <span className="text-sm font-medium text-success-600 dark:text-success-400">
-                    Reward: +₦{showAd.reward.toLocaleString()}
-                  </span>
-                  <button
-                    onClick={() => handleComplete(showAd._id)}
-                    disabled={completing === showAd._id}
-                    className="btn-primary text-sm px-4 py-2"
-                  >
-                    {completing === showAd._id ? 'Processing...' : 'Complete & Earn'}
-                  </button>
-                </div>
+
+                <button
+                  onClick={() => {
+                    setShowAdModal(null);
+                    setAdViewed(false);
+                  }}
+                  className="w-full text-sm text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 py-2 transition-colors"
+                >
+                  {adViewed ? 'Close' : 'Cancel'}
+                </button>
               </div>
             </div>
           </div>

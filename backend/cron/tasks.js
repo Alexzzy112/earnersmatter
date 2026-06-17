@@ -7,6 +7,7 @@ const defaultTemplates = [
   { title: 'Watch & Earn: Platform Tutorial', description: 'Watch our quick tutorial on maximizing your daily earnings.', type: 'watch' },
   { title: 'Click & Earn: Market Update', description: 'Click to view today\'s market update and stay informed about your investments.', type: 'click' },
   { title: 'Sponsored: Daily Tips', description: 'Read our daily investment tips to make smarter decisions.', type: 'click' },
+  { title: 'Video: Success Stories', description: 'Watch how our top investors are maximizing their returns every day.', type: 'watch' },
 ];
 
 const generateDailyTasks = async () => {
@@ -31,7 +32,7 @@ const generateDailyTasks = async () => {
       title: tpl.title,
       description: tpl.description,
       imageUrl: tpl.imageUrl || `https://placehold.co/600x200/1a1a2e/e94560?text=Ad+${i + 1}`,
-      linkUrl: tpl.linkUrl || '#',
+      linkUrl: tpl.linkUrl || '',
       reward: tpl.reward || 500,
       type: tpl.type || 'ad',
       status: 'active',

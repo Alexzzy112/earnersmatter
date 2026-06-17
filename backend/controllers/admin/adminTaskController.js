@@ -65,7 +65,12 @@ exports.createTask = async (req, res) => {
 
 exports.updateTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const allowed = ['title', 'description', 'imageUrl', 'linkUrl', 'reward', 'type', 'status'];
+    const data = {};
+    for (const field of allowed) {
+      if (req.body[field] !== undefined) data[field] = req.body[field];
+    }
+    const task = await Task.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }

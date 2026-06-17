@@ -15,9 +15,16 @@ const userTaskSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  status: {
+    type: String,
+    enum: ['pending', 'started', 'completed'],
+    default: 'pending',
+  },
+  startedAt: {
+    type: Date,
+  },
   completedAt: {
     type: Date,
-    default: Date.now,
   },
   forDate: {
     type: Date,
@@ -28,6 +35,6 @@ const userTaskSchema = new mongoose.Schema({
 });
 
 userTaskSchema.index({ userId: 1, taskId: 1 }, { unique: true });
-userTaskSchema.index({ userId: 1, forDate: 1 });
+userTaskSchema.index({ userId: 1, forDate: 1, status: 1 });
 
 module.exports = mongoose.model('UserTask', userTaskSchema);

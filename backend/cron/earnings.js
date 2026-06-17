@@ -3,15 +3,11 @@ const cron = require('node-cron');
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
 const Investment = require('../models/Investment');
-const User = require('../models/User');
-const Transaction = require('../models/Transaction');
 const EarningSchedule = require('../models/EarningSchedule');
-const Notification = require('../models/Notification');
-const Setting = require('../models/Setting');
 const AuditLog = require('../models/AuditLog');
-const { generateReference } = require('../utils/helpers');
+const Notification = require('../models/Notification');
 
-const processDailyEarnings = async () => {
+const processInvestmentCycles = async () => {
   let processedCount = 0;
   try {
     const investments = await Investment.find({
@@ -26,29 +22,23 @@ const processDailyEarnings = async () => {
 
         const dailyEarnings = investment.dailyEarnings;
         const now = new Date();
-        const reference = generateReference();
-        const balanceBefore = user.walletBalance;
+        const startDate = investment.startDate;
+        const dayNumber = Math.floor((now - new Date(startDate)) / (24 * 60 * 60 * 1000)) + 1;
 
-        const updatedUser = await User.findOneAndUpdate(
-          { _id: user._id },
-          { $inc: { walletBalance: dailyEarnings, totalEarnings: dailyEarnings } },
-          { new: true }
-        );
-
-        if (!updatedUser) continue;
-
-        const balanceAfter = updatedUser.walletBalance;
-
-        const transaction = await Transaction.create({
-          userId: user._id,
-          type: 'earning',
-          amount: dailyEarnings,
-          balanceBefore,
-          balanceAfter,
-          description: `Daily earning for investment ${investment._id}`,
-          reference,
-          status: 'completed',
+        const existingSchedule = await EarningSchedule.findOne({
+          investmentId: investment._id,
+          dayNumber,
         });
+
+        if (!existingSchedule) {
+          await EarningSchedule.create({
+            investmentId: investment._id,
+            dayNumber,
+            amount: dailyEarnings,
+            status: 'pending',
+            scheduledDate: now,
+          });
+        }
 
         investment.earningsReceived += dailyEarnings;
         investment.lastEarningAt = now;
@@ -62,43 +52,24 @@ const processDailyEarnings = async () => {
         }
         await investment.save();
 
-        const startDate = investment.startDate;
-        const dayNumber = Math.floor((now - new Date(startDate)) / (24 * 60 * 60 * 1000)) + 1;
-
-        await EarningSchedule.create({
-          investmentId: investment._id,
-          dayNumber,
-          amount: dailyEarnings,
-          status: 'paid',
-          scheduledDate: now,
-          paidAt: now,
-        });
-
-        await Notification.create({
-          userId: user._id,
-          type: 'earning_credited',
-          title: 'Daily Earning Credited',
-          message: `${dailyEarnings.toFixed(2)} has been credited to your wallet.`,
-        });
-
         if (investmentCompleted) {
           await Notification.create({
             userId: user._id,
             type: 'investment_completed',
             title: 'Investment Completed',
-            message: `Your investment has been completed. Total earnings: ${investment.earningsReceived.toFixed(2)}`,
+            message: `Your investment has been completed. Complete your pending tasks to claim remaining earnings. Total earnings: ${investment.earningsReceived.toFixed(2)}`,
           });
         }
 
         await AuditLog.create({
           userId: user._id,
-          action: 'daily_earning_credited',
+          action: 'earning_day_available',
           entityType: 'Investment',
           entityId: investment._id,
           details: {
             amount: dailyEarnings,
-            balanceAfter,
-            transactionId: transaction._id,
+            dayNumber,
+            status: 'pending_tasks',
           },
         });
 
@@ -108,15 +79,15 @@ const processDailyEarnings = async () => {
       }
     }
   } catch (error) {
-    console.error('Error processing daily earnings:', error.message);
+    console.error('Error processing investment cycles:', error.message);
   }
   return processedCount;
 };
 
 cron.schedule('0 * * * *', () => {
-  console.log('Running daily earnings cron job...');
-  processDailyEarnings()
-    .then((count) => console.log(`Processed ${count} earnings.`))
+  console.log('Running investment cycle cron job...');
+  processInvestmentCycles()
+    .then((count) => console.log(`Processed ${count} investment cycles.`))
     .catch((err) => console.error('Cron job failed:', err.message));
 });
 
@@ -124,11 +95,11 @@ if (require.main === module) {
   const connectDB = require('../config/db');
   connectDB()
     .then(() => {
-      console.log('Starting daily earnings processing...');
-      return processDailyEarnings();
+      console.log('Starting investment cycle processing...');
+      return processInvestmentCycles();
     })
     .then((count) => {
-      console.log(`Processed ${count} earnings.`);
+      console.log(`Processed ${count} investment cycles.`);
       process.exit(0);
     })
     .catch((err) => {
@@ -137,4 +108,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { processDailyEarnings };
+module.exports = { processInvestmentCycles };
