@@ -1,16 +1,17 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { userAPI, authAPI } from '@/lib/api';
+import { userAPI, authAPI, referralAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { FiUser, FiMail, FiPhone, FiShield, FiRefreshCw, FiCheckCircle, FiXCircle, FiSend, FiMessageCircle } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiShield, FiRefreshCw, FiCheckCircle, FiXCircle, FiSend, FiMessageCircle, FiLink, FiCopy, FiUsers } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [referralLink, setReferralLink] = useState('');
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -33,6 +34,28 @@ export default function ProfilePage() {
       }
     })();
   }, [user, updateUser]);
+
+  useEffect(() => {
+    const fetchReferral = async () => {
+      try {
+        const statsRes = await referralAPI.getStats();
+        const origin = window.location.origin;
+        const link = statsRes.data.referralLink ||
+          `${origin}/auth/register?ref=${statsRes.data.referralCode || ''}`;
+        setReferralLink(link);
+      } catch {}
+    };
+    if (user) fetchReferral();
+  }, [user]);
+
+  const copyReferralLink = async () => {
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      toast.success('Referral link copied!');
+    } catch {
+      toast.error('Failed to copy');
+    }
+  };
 
   const validatePassword = () => {
     const errors = {};
@@ -164,6 +187,20 @@ export default function ProfilePage() {
                     <p className="text-xs text-dark-400 truncate">support@earnersmatter.com</p>
                   </div>
                 </a>
+              </div>
+            </div>
+
+            {/* Referral Link */}
+            <div className="card p-6">
+              <h2 className="text-lg font-semibold text-dark-900 dark:text-white mb-4 flex items-center gap-2">
+                <FiUsers size={18} /> Referral Link
+              </h2>
+              <div className="flex items-center gap-3 p-3 bg-dark-50 dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg mb-3">
+                <FiLink size={16} className="text-primary-500 shrink-0" />
+                <span className="text-sm text-dark-600 dark:text-dark-300 truncate flex-1">{referralLink || 'Loading...'}</span>
+                <button onClick={copyReferralLink} className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg" title="Copy link">
+                  <FiCopy size={16} />
+                </button>
               </div>
             </div>
 
