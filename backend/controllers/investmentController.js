@@ -89,8 +89,8 @@ const purchaseProduct = async (req, res) => {
           Setting.findOne({ key: 'referralBonus' }),
           Setting.findOne({ key: 'bonusType' }),
         ]);
-        const bonusType = typeSetting?.value || 'fixed';
-        const bonusValue = Number(bonusSetting?.value) || 1000;
+        const bonusType = typeSetting?.value || 'percentage';
+        const bonusValue = Number(bonusSetting?.value) || 30;
         const bonusAmount = bonusType === 'percentage'
           ? Math.round(totalCost * (bonusValue / 100))
           : Math.round(bonusValue);

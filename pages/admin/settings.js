@@ -7,7 +7,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import toast from 'react-hot-toast';
 import {
   FiSettings, FiSave, FiGlobe, FiDollarSign, FiPercent, FiUsers,
-  FiToggleLeft, FiToggleRight, FiRefreshCw, FiInfo
+  FiToggleLeft, FiToggleRight, FiRefreshCw, FiInfo, FiGift
 } from 'react-icons/fi';
 
 const settingFields = [
@@ -18,7 +18,8 @@ const settingFields = [
   { key: 'minWithdrawal', label: 'Min Withdrawal', type: 'number', icon: FiDollarSign, section: 'Withdrawals', step: '0.01' },
   { key: 'maxWithdrawal', label: 'Max Withdrawal', type: 'number', icon: FiDollarSign, section: 'Withdrawals', step: '0.01' },
   { key: 'withdrawalCharge', label: 'Withdrawal Charge %', type: 'number', icon: FiPercent, section: 'Withdrawals', step: '0.1' },
-  { key: 'referralBonus', label: 'Referral Bonus Amount', type: 'number', icon: FiUsers, section: 'Referrals', step: '0.01' },
+  { key: 'welcomeBonus', label: 'Welcome Bonus (₦)', type: 'number', icon: FiGift, section: 'Referrals', step: '0.01' },
+  { key: 'referralBonus', label: 'Referral Bonus %', type: 'number', icon: FiUsers, section: 'Referrals', step: '0.01' },
   { key: 'bonusType', label: 'Bonus Type', type: 'select', icon: FiUsers, section: 'Referrals', options: ['fixed', 'percentage'] },
   { key: 'currencySymbol', label: 'Currency Symbol', type: 'text', icon: FiDollarSign, section: 'General' },
   { key: 'maintenanceMode', label: 'Maintenance Mode', type: 'toggle', icon: FiSettings, section: 'System' },
