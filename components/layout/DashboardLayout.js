@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { notificationAPI } from '@/lib/api';
 import {
   FiGrid, FiDollarSign, FiArrowUpRight, FiPackage, FiTrendingUp,
-  FiBarChart2, FiUsers, FiCheckSquare, FiRefreshCw, FiBell, FiUser, FiLogOut, FiMenu, FiX, FiMessageCircle, FiAward
+  FiBarChart2, FiUsers, FiCheckSquare, FiRefreshCw, FiBell, FiUser, FiLogOut, FiMenu, FiX, FiMessageCircle, FiAward, FiHome
 } from 'react-icons/fi';
 import { Toaster } from 'react-hot-toast';
 
@@ -177,8 +177,9 @@ export default function DashboardLayout({ children }) {
           {[
             { href: '/user/products', label: 'Products', icon: FiPackage },
             { href: '/user/referrals', label: 'Referral', icon: FiUsers },
-            { href: '/user/profile', label: 'Profile', icon: FiUser },
             { href: '/user/wallet', label: 'Wallet', icon: FiDollarSign },
+            { href: '/user/dashboard', label: 'Dashboard', icon: FiHome },
+            { href: '/user/profile', label: 'Profile', icon: FiUser },
           ].map((item) => {
             const isActive = pathname === item.href;
             return (

@@ -4,55 +4,35 @@ import { userAPI, authAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { FiUser, FiMail, FiPhone, FiShield, FiSave, FiRefreshCw, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiShield, FiRefreshCw, FiCheckCircle, FiXCircle, FiSend, FiMessageCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [profileData, setProfileData] = useState({
-    username: '',
-    phone: '',
-  });
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
-  const [profileErrors, setProfileErrors] = useState({});
   const [passwordErrors, setPasswordErrors] = useState({});
-  const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (user) {
-        setProfileData({ username: user.username || '', phone: user.phone || '' });
-        return;
-      }
-      setLoading(true);
+    if (user) return;
+    setLoading(true);
+    (async () => {
       try {
         const res = await authAPI.getMe();
-        const u = res.data.user || res.data;
-        setProfileData({ username: u.username || '', phone: u.phone || '' });
-        updateUser(u);
+        updateUser(res.data.user || res.data);
       } catch (err) {
         setError('Failed to load profile');
       } finally {
         setLoading(false);
       }
-    };
-    fetchUser();
+    })();
   }, [user, updateUser]);
-
-  const validateProfile = () => {
-    const errors = {};
-    if (!profileData.username.trim()) errors.username = 'Username is required';
-    if (profileData.phone && !/^\+?[\d\s-]{7,}$/.test(profileData.phone)) errors.phone = 'Invalid phone number';
-    setProfileErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
 
   const validatePassword = () => {
     const errors = {};
@@ -61,22 +41,6 @@ export default function ProfilePage() {
     if (passwordData.newPassword !== passwordData.confirmPassword) errors.confirmPassword = 'Passwords do not match';
     setPasswordErrors(errors);
     return Object.keys(errors).length === 0;
-  };
-
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateProfile()) return;
-
-    setSavingProfile(true);
-    try {
-      const res = await userAPI.updateProfile(profileData);
-      updateUser(res.data.user || res.data);
-      toast.success('Profile updated successfully!');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update profile');
-    } finally {
-      setSavingProfile(false);
-    }
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -152,49 +116,55 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Edit Profile & Password */}
+          {/* Contact & Password */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Edit Profile */}
+            {/* Contact */}
             <div className="card p-6">
               <h2 className="text-lg font-semibold text-dark-900 dark:text-white mb-4 flex items-center gap-2">
-                <FiUser size={18} /> Edit Profile
+                <FiMessageCircle size={18} /> Contact
               </h2>
-              <form onSubmit={handleProfileSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">Username</label>
-                  <input
-                    type="text"
-                    value={profileData.username}
-                    onChange={(e) => { setProfileData({ ...profileData, username: e.target.value }); setProfileErrors({}); }}
-                    className="input-field"
-                  />
-                  {profileErrors.username && <p className="text-xs text-danger-500 mt-1">{profileErrors.username}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={user?.email || ''}
-                    disabled
-                    className="input-field opacity-60 cursor-not-allowed"
-                  />
-                  <p className="text-xs text-dark-400 mt-1">Email cannot be changed</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">Phone</label>
-                  <input
-                    type="text"
-                    value={profileData.phone}
-                    onChange={(e) => { setProfileData({ ...profileData, phone: e.target.value }); setProfileErrors({}); }}
-                    placeholder="+1234567890"
-                    className="input-field"
-                  />
-                  {profileErrors.phone && <p className="text-xs text-danger-500 mt-1">{profileErrors.phone}</p>}
-                </div>
-                <button type="submit" className="btn-primary" disabled={savingProfile}>
-                  {savingProfile ? 'Saving...' : <><FiSave size={16} /> Save Changes</>}
-                </button>
-              </form>
+              <div className="space-y-4">
+                <a
+                  href="https://t.me/earnersmatter"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                    <FiSend size={18} className="text-sky-600 dark:text-sky-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-dark-900 dark:text-white">Telegram Channel</p>
+                    <p className="text-xs text-dark-400 truncate">Join our channel for updates</p>
+                  </div>
+                </a>
+                <a
+                  href="https://t.me/earnersmatter_admin"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                    <FiMessageCircle size={18} className="text-primary-600 dark:text-primary-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-dark-900 dark:text-white">Admin Account</p>
+                    <p className="text-xs text-dark-400 truncate">Message the admin directly</p>
+                  </div>
+                </a>
+                <a
+                  href="mailto:support@earnersmatter.com"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                    <FiMail size={18} className="text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-dark-900 dark:text-white">Email</p>
+                    <p className="text-xs text-dark-400 truncate">support@earnersmatter.com</p>
+                  </div>
+                </a>
+              </div>
             </div>
 
             {/* Change Password */}
