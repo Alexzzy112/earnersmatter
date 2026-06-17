@@ -11,7 +11,7 @@ exports.getAllAccounts = async (req, res) => {
   }
 };
 
-const ACCOUNT_ALLOWED_FIELDS = ['accountName', 'accountNumber', 'bank', 'type'];
+const ACCOUNT_ALLOWED_FIELDS = ['accountName', 'accountNumber', 'bankName', 'accountType'];
 
 exports.createAccount = async (req, res) => {
   try {
@@ -85,6 +85,7 @@ exports.activateAccount = async (req, res) => {
       newAccountId: account._id,
       switchedBy: req.user._id,
       switchedAt: new Date(),
+      switchType: 'manual',
     });
 
     await logAction({

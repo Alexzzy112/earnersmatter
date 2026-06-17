@@ -147,7 +147,18 @@ export default function AdminPaymentAccounts() {
                 <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
                   <div className="flex items-center gap-2"><FiHash className="w-3.5 h-3.5" /><span className="font-mono">{account.accountNumber}</span></div>
                   <div className="flex items-center gap-2"><FiHome className="w-3.5 h-3.5" /><span>{account.bankName}</span></div>
-                  <div className="flex items-center gap-2"><FiType className="w-3.5 h-3.5" /><span className="capitalize">{(account.accountType || account.type || 'bank').replace('_', ' ')}</span></div>
+                  <div className="flex items-center gap-2"><FiType className="w-3.5 h-3.5" /><span className="capitalize">{(account.accountType || 'bank').replace('_', ' ')}</span></div>
+                  {account.isActive && (
+                    <div className="pt-1">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-gray-400">Auto-rotate</span>
+                        <span className="font-medium text-gray-600 dark:text-gray-300">{account.assignmentCount || 0}/5</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-1.5">
+                        <div className="bg-primary-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((account.assignmentCount || 0) / 5) * 100, 100)}%` }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -165,17 +176,27 @@ export default function AdminPaymentAccounts() {
                   <tr className="border-b border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-900">
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Previous Account</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">New Account</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Admin</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Initiated By</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-dark-700">
                   {switchHistory.map((entry, idx) => (
                     <tr key={entry._id || idx} className="hover:bg-gray-50 dark:hover:bg-dark-700">
-                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{entry.previousAccount?.accountName || entry.previousAccount || '—'}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">{entry.newAccount?.accountName || entry.newAccount || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{entry.createdAt ? new Date(entry.createdAt).toLocaleString() : '—'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{entry.admin?.username || entry.admin || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{entry.previousAccountId?.accountName || '—'}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">{entry.newAccountId?.accountName || '—'}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                          entry.switchType === 'auto'
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                            : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                        }`}>
+                          {entry.switchType === 'auto' ? 'Auto' : 'Manual'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{entry.switchedAt ? new Date(entry.switchedAt).toLocaleString() : '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{entry.switchedBy?.username || 'System'}</td>
                     </tr>
                   ))}
                 </tbody>

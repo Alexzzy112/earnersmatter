@@ -1,6 +1,7 @@
 const Deposit = require('../models/Deposit');
 const Transaction = require('../models/Transaction');
 const PaymentAccount = require('../models/PaymentAccount');
+const AccountSwitchLog = require('../models/AccountSwitchLog');
 const helpers = require('../utils/helpers');
 const { logAction } = require('../utils/auditLogger');
 
@@ -34,6 +35,29 @@ const createDeposit = async (req, res) => {
       status: 'pending',
       reference,
     });
+
+    // Increment assignment count and auto-rotate after 5
+    paymentAccount.assignmentCount = (paymentAccount.assignmentCount || 0) + 1;
+    await paymentAccount.save();
+
+    if (paymentAccount.assignmentCount >= 5) {
+      paymentAccount.isActive = false;
+      await paymentAccount.save();
+
+      const nextAccount = await PaymentAccount.findOne({ _id: { $ne: paymentAccount._id }, isActive: false });
+      if (nextAccount) {
+        nextAccount.isActive = true;
+        nextAccount.assignmentCount = 0;
+        await nextAccount.save();
+
+        await AccountSwitchLog.create({
+          previousAccountId: paymentAccount._id,
+          newAccountId: nextAccount._id,
+          switchedAt: new Date(),
+          switchType: 'auto',
+        });
+      }
+    }
 
     await logAction({
       userId: req.user._id,

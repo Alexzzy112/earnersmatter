@@ -13,7 +13,11 @@ const accountSwitchLogSchema = new mongoose.Schema({
   switchedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+  },
+  switchType: {
+    type: String,
+    enum: ['manual', 'auto'],
+    default: 'manual',
   },
   switchedAt: {
     type: Date,
