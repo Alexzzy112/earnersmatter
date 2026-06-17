@@ -11,6 +11,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
+    localStorage.removeItem('em_welcome_seen');
     setToken(null);
     setUser(null);
   }, []);
