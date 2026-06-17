@@ -22,6 +22,8 @@ const settingFields = [
   { key: 'bonusType', label: 'Bonus Type', type: 'select', icon: FiUsers, section: 'Referrals', options: ['fixed', 'percentage'] },
   { key: 'currencySymbol', label: 'Currency Symbol', type: 'text', icon: FiDollarSign, section: 'General' },
   { key: 'maintenanceMode', label: 'Maintenance Mode', type: 'toggle', icon: FiSettings, section: 'System' },
+  { key: 'defaultAdLink', label: 'Default Ad Link', type: 'text', icon: FiGlobe, section: 'Tasks', placeholder: 'https://example.com/ad' },
+  { key: 'defaultAdImage', label: 'Default Ad Image URL', type: 'text', icon: FiGlobe, section: 'Tasks', placeholder: 'https://example.com/ad-image.jpg' },
 ];
 
 const sections = [...new Set(settingFields.map((f) => f.section))];
@@ -81,7 +83,7 @@ export default function AdminSettings() {
               <div key={section} className="bg-white dark:bg-dark-800 rounded-xl border border-gray-200 dark:border-dark-700 p-5">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-dark-700">{section}</h2>
                 <div className="space-y-5">
-                  {settingFields.filter((f) => f.section === section).map(({ key, label, type, icon: Icon, step, options }) => {
+                  {settingFields.filter((f) => f.section === section).map(({ key, label, type, icon: Icon, step, options, placeholder }) => {
                     const value = settings[key];
 
                     if (type === 'toggle') {
@@ -132,7 +134,7 @@ export default function AdminSettings() {
                             <textarea className="flex-1 px-3 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 !min-h-[80px]"
                               value={value || ''} onChange={(e) => handleChange(key, e.target.value)} />
                           ) : (
-                            <input type={type} step={step}
+                            <input type={type} step={step} placeholder={placeholder}
                               className="flex-1 px-3 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                               value={value ?? ''} onChange={(e) => handleChange(key, type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value)} />
                           )}

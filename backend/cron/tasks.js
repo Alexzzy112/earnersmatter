@@ -22,17 +22,24 @@ const generateDailyTasks = async () => {
       return { generated: 0, message: 'Tasks already exist for today' };
     }
 
-    const setting = await Setting.findOne({ key: 'dailyTasks' });
+    const [dailyTasksSetting, adLinkSetting, adImageSetting] = await Promise.all([
+      Setting.findOne({ key: 'dailyTasks' }),
+      Setting.findOne({ key: 'defaultAdLink' }),
+      Setting.findOne({ key: 'defaultAdImage' }),
+    ]);
+    const defaultAdLink = adLinkSetting?.value || '';
+    const defaultAdImage = adImageSetting?.value || '';
+
     let templates = defaultTemplates;
-    if (setting && Array.isArray(setting.value) && setting.value.length > 0) {
-      templates = setting.value;
+    if (dailyTasksSetting && Array.isArray(dailyTasksSetting.value) && dailyTasksSetting.value.length > 0) {
+      templates = dailyTasksSetting.value;
     }
 
     const tasks = templates.map((tpl, i) => ({
       title: tpl.title,
       description: tpl.description,
-      imageUrl: tpl.imageUrl || `https://placehold.co/600x200/1a1a2e/e94560?text=Ad+${i + 1}`,
-      linkUrl: tpl.linkUrl || '',
+      imageUrl: tpl.imageUrl || defaultAdImage || `https://placehold.co/600x200/1a1a2e/e94560?text=Ad+${i + 1}`,
+      linkUrl: tpl.linkUrl || defaultAdLink,
       reward: tpl.reward || 500,
       type: tpl.type || 'ad',
       status: 'active',
