@@ -36,8 +36,8 @@ export default function ContactPage() {
     </DashboardLayout>
   );
 
-  const telegramChannel = data?.contactTelegramChannel || 'https://t.me/earnersmatter';
-  const telegramAdmin = data?.contactTelegramAdmin || 'https://t.me/earnersmatter_admin';
+  const telegramChannel = data?.contactTelegramChannel || 'https://t.me/earnersmatter_platform';
+  const telegramAdmin = data?.contactTelegramAdmin || 'https://t.me/xenderCEO';
 
   return (
     <DashboardLayout>
