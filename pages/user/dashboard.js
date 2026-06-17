@@ -22,7 +22,6 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [balance, setBalance] = useState(0);
-  const [countdown, setCountdown] = useState('');
 
   const d = data || {};
   const recentTransactions = d.recentTransactions || [];
@@ -48,27 +47,6 @@ export default function UserDashboard() {
     };
     fetchData();
   }, []);
-
-  useEffect(() => {
-    if (!recentInvestments?.length) return;
-    const nextEarning = new Date(recentInvestments[0].nextEarningAt);
-    if (isNaN(nextEarning.getTime())) return;
-
-    const timer = setInterval(() => {
-      const now = new Date();
-      const diff = nextEarning - now;
-      if (diff <= 0) {
-        setCountdown('Processing...');
-        return;
-      }
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setCountdown(`${hours}h ${minutes}m ${seconds}s`);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [recentInvestments]);
 
   if (loading) return <DashboardLayout><LoadingSpinner /></DashboardLayout>;
   if (error) return (
@@ -114,27 +92,32 @@ export default function UserDashboard() {
       `}</style>
 
       <div className="space-y-6">
-        {/* Fake Withdrawal Marquee */}
-        <div className="marquee-track bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg py-2 px-4 text-sm text-success-700 dark:text-success-300">
+        {/* Recent Withdrawals Marquee */}
+        <div className="marquee-track bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg py-3 px-4 text-sm text-white font-medium shadow-lg">
           <div className="marquee-content">
             {(() => {
               const items = [
-                'Chisom O. withdrew ₦15,000',
-                'Emeka N. withdrew ₦25,500',
-                'Aisha B. withdrew ₦10,000',
-                'David A. withdrew ₦50,000',
-                'Grace E. withdrew ₦8,500',
-                'Samuel K. withdrew ₦35,000',
-                'Blessing W. withdrew ₦20,000',
-                'Michael T. withdrew ₦45,000',
-                'Jennifer D. withdrew ₦12,000',
-                'Patrick O. withdrew ₦60,000',
-                'Ngozi F. withdrew ₦18,500',
-                'Ibrahim S. withdrew ₦30,000',
-                'Funke A. withdrew ₦22,000',
-                'Tunde R. withdrew ₦40,000',
-                'Esther M. withdrew ₦16,000',
-                'Kehinde J. withdrew ₦55,000',
+                'Chidi O. just withdrew ₦185,000',
+                'Amina B. just withdrew ₦92,500',
+                'Femi A. just withdrew ₦150,000',
+                'Zainab K. just withdrew ₦210,000',
+                'Emeka C. just withdrew ₦78,000',
+                'Tolu O. just withdrew ₦165,000',
+                'Ngozi M. just withdrew ₦120,000',
+                'Segun A. just withdrew ₦250,000',
+                'Chioma E. just withdrew ₦95,000',
+                'Musa I. just withdrew ₦180,000',
+                'Yetunde F. just withdrew ₦140,000',
+                'Kelechi N. just withdrew ₦55,000',
+                'Grace O. just withdrew ₦200,000',
+                'Bola T. just withdrew ₦110,000',
+                'Ifeanyi D. just withdrew ₦175,000',
+                'Rashidat O. just withdrew ₦75,000',
+                'Olayinka M. just withdrew ₦225,000',
+                'Peter O. just withdrew ₦85,000',
+                'Esther A. just withdrew ₦160,000',
+                'Usman B. just withdrew ₦195,000',
+                'Florence I. just withdrew ₦130,000',
               ];
               const text = items.join('      •      ');
               return text + '      •      ' + text;
@@ -153,22 +136,6 @@ export default function UserDashboard() {
             <StatsCard key={i} {...s} />
           ))}
         </div>
-
-        {/* Next Earnings Countdown */}
-        {recentInvestments?.length > 0 && (
-          <div className="bg-gradient-to-r from-primary-500 to-primary-700 rounded-xl p-6 text-white mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold mb-1">Next Earnings</h3>
-                <p className="text-primary-100 text-sm">Your next earnings will be credited in:</p>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold">{countdown}</div>
-                <p className="text-primary-100 text-sm mt-1">{recentInvestments.length} active investment{recentInvestments.length > 1 ? 's' : ''}</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-3">
