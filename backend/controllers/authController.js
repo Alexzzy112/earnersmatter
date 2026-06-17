@@ -187,8 +187,13 @@ const forgotPassword = async (req, res) => {
     }
 
     const user = await User.findOne({ email });
+
+    // Generic message regardless of whether user exists (prevents enumeration)
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(200).json({
+        success: true,
+        message: 'If the email exists, a reset link has been sent',
+      });
     }
 
     const token = uuidv4();
@@ -199,14 +204,6 @@ const forgotPassword = async (req, res) => {
       token,
       expiresAt,
     });
-
-    if (process.env.NODE_ENV === 'development') {
-      return res.status(200).json({
-        success: true,
-        message: 'Password reset token generated',
-        data: { resetToken: token },
-      });
-    }
 
     res.status(200).json({
       success: true,
@@ -242,7 +239,7 @@ const resetPassword = async (req, res) => {
 
     const user = await User.findById(resetRecord.userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(400).json({ success: false, message: 'Invalid or expired token' });
     }
 
     user.password = password;
@@ -354,14 +351,6 @@ const sendVerificationEmail = async (req, res) => {
     user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await user.save();
 
-    // In production, send actual email. In dev, return token
-    if (process.env.NODE_ENV === 'development') {
-      return res.json({
-        success: true,
-        message: 'Verification email sent. Dev mode token:',
-        verificationToken
-      });
-    }
     res.json({ success: true, message: 'Verification email sent' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

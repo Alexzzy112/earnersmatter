@@ -8,6 +8,10 @@ const { generateReferralCode } = require('../../utils/helpers');
 
 const reseed = async (req, res) => {
   try {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({ success: false, message: 'Not available in production' });
+    }
+
     const collections = await mongoose.connection.db.listCollections().toArray();
     for (const collection of collections) {
       await mongoose.connection.db.dropCollection(collection.name);

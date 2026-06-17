@@ -1,5 +1,6 @@
 const Transaction = require('../models/Transaction');
 const EarningSchedule = require('../models/EarningSchedule');
+const Investment = require('../models/Investment');
 const helpers = require('../utils/helpers');
 
 const getUserEarnings = async (req, res) => {
@@ -30,6 +31,14 @@ const getUserEarnings = async (req, res) => {
 
 const getEarningSchedule = async (req, res) => {
   try {
+    const investment = await Investment.findOne({
+      _id: req.params.investmentId,
+      userId: req.user._id,
+    });
+    if (!investment) {
+      return res.status(404).json({ success: false, message: 'Investment not found' });
+    }
+
     const schedules = await EarningSchedule.find({ investmentId: req.params.investmentId })
       .sort({ dayNumber: 1 });
 

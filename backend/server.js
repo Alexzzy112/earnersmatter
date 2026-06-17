@@ -24,8 +24,21 @@ app.set('trust proxy', 1);
 
 // Security
 app.use(helmet({
-  crossOriginResourcePolicy: false,
-  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'same-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      fontSrc: ["'self'", 'data:'],
+      connectSrc: ["'self'", 'https:'],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
 }));
 app.use(cors({
   origin: process.env.APP_URL || 'http://localhost:3000',
@@ -45,13 +58,7 @@ app.get('/api/uploads/:filename', (req, res) => {
   }
 });
 
-// Body parsing & sanitization
-app.use(mongoSanitize());
-app.use(sanitizeInput);
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-
-// Rate limiting
+// Rate limiting (before body parsing to prevent resource exhaustion)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -81,6 +88,12 @@ app.use('/api/deposits', financialLimiter);
 app.use('/api/withdrawals', financialLimiter);
 app.use('/api/investments', financialLimiter);
 app.use('/api', apiLimiter);
+
+// Body parsing & sanitization
+app.use(mongoSanitize());
+app.use(sanitizeInput);
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // API cache control
 app.use('/api', (req, res, next) => {

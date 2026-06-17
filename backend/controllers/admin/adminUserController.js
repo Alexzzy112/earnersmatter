@@ -65,7 +65,7 @@ exports.getUserById = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const allowedFields = ['status', 'walletBalance', 'phone', 'referralBonusRate'];
+    const allowedFields = ['status', 'phone', 'referralBonusRate'];
     const updates = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
