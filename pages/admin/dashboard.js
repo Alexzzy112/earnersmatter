@@ -8,7 +8,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
   FiUsers, FiUserCheck, FiDollarSign, FiArrowUpRight, FiTrendingUp,
-  FiBarChart2, FiPieChart, FiClock, FiRefreshCw, FiActivity, FiChevronRight
+  FiBarChart2, FiPieChart, FiClock, FiRefreshCw, FiActivity, FiChevronRight, FiAlertTriangle, FiDatabase
 } from 'react-icons/fi';
 
 export default function AdminDashboard() {
@@ -45,6 +45,28 @@ export default function AdminDashboard() {
     { key: 'pendingDeposits', label: 'Pending Deposits', icon: FiClock, color: 'yellow' },
     { key: 'pendingWithdrawals', label: 'Pending Withdrawals', icon: FiClock, color: 'red' },
   ];
+
+  const [reseeding, setReseeding] = useState(false);
+
+  const handleReseed = async () => {
+    const confirmed = window.confirm(
+      'WARNING: This will DELETE ALL DATA (users, investments, transactions, etc.) and reset to factory defaults. Are you sure?'
+    );
+    if (!confirmed) return;
+    const doubleConfirm = window.confirm('This is irreversible! All data will be lost. Proceed?');
+    if (!doubleConfirm) return;
+
+    setReseeding(true);
+    try {
+      await adminAPI.reseed();
+      toast.success('Database reseeded successfully!');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Reseed failed');
+    } finally {
+      setReseeding(false);
+    }
+  };
 
   const quickActions = [
     { label: 'Approve Deposits', href: '/admin/deposits', description: 'Review pending deposits', color: 'green' },
@@ -170,6 +192,16 @@ export default function AdminDashboard() {
                     <span className="font-medium text-gray-900 dark:text-white">{(data.pendingDeposits || 0) + (data.pendingWithdrawals || 0)}</span>
                   </div>
                 </div>
+                <button
+                  onClick={handleReseed}
+                  disabled={reseeding}
+                  className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50"
+                >
+                  <FiDatabase className="w-4 h-4" />
+                  {reseeding ? 'Reseeding...' : 'Reseed Database'}
+                  <FiAlertTriangle className="w-4 h-4" />
+                </button>
+                <p className="mt-2 text-xs text-gray-400 dark:text-gray-500 text-center">Resets all data to factory defaults</p>
               </div>
             )}
           </div>

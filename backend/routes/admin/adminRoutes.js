@@ -16,6 +16,7 @@ const adminAuditLogController = require('../../controllers/admin/adminAuditLogCo
 const adminSettingsController = require('../../controllers/admin/adminSettingsController');
 const adminNotificationController = require('../../controllers/admin/adminNotificationController');
 const adminTaskController = require('../../controllers/admin/adminTaskController');
+const adminReseedController = require('../../controllers/admin/adminReseedController');
 
 router.use(auth, adminMiddleware);
 
@@ -93,5 +94,8 @@ router.post('/tasks', adminTaskController.createTask);
 router.put('/tasks/:id', adminTaskController.updateTask);
 router.delete('/tasks/:id', adminTaskController.deleteTask);
 router.post('/tasks/generate', adminTaskController.generateTasks);
+
+// Reseed
+router.post('/reseed', adminReseedController.reseed);
 
 module.exports = router;
