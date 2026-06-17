@@ -17,6 +17,7 @@ const navItems = [
   { href: '/user/products', label: 'Products', icon: FiPackage },
   { href: '/user/investments', label: 'Investments', icon: FiTrendingUp },
   { href: '/user/earnings', label: 'Earnings', icon: FiBarChart2 },
+  { href: '/user/tasks', label: 'Daily Tasks', icon: FiCheckSquare },
   { href: '/user/transactions', label: 'Transactions', icon: FiRefreshCw },
   { href: '/user/leaderboard', label: 'Leaderboard', icon: FiAward },
   { href: '/user/contact', label: 'Contact', icon: FiMessageCircle },
@@ -175,7 +176,7 @@ export default function DashboardLayout({ children }) {
         <div className="flex items-center justify-around px-2 py-1">
           {[
             { href: '/user/products', label: 'Products', icon: FiPackage },
-            { href: '/user/referrals', label: 'Referral', icon: FiUsers },
+            { href: '/user/tasks', label: 'Daily Tasks', icon: FiCheckSquare },
             { href: '/user/wallet', label: 'Wallet', icon: FiDollarSign },
             { href: '/user/dashboard', label: 'Dashboard', icon: FiHome },
             { href: '/user/profile', label: 'Profile', icon: FiUser },
