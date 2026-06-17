@@ -41,7 +41,7 @@ exports.createTask = async (req, res) => {
       title,
       description: description || '',
       imageUrl: imageUrl || '',
-      linkUrl: linkUrl || '#',
+      linkUrl: linkUrl || '',
       reward: reward || 500,
       type: type || 'ad',
       status: 'active',

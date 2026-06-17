@@ -36,8 +36,11 @@ export default function TasksPage() {
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   const handleStartEarns = async (task) => {
-    const linkUrl = task.linkUrl;
-    if (linkUrl) {
+    let linkUrl = task.linkUrl;
+    if (linkUrl && linkUrl !== '#') {
+      if (!linkUrl.startsWith('http://') && !linkUrl.startsWith('https://')) {
+        linkUrl = 'https://' + linkUrl;
+      }
       window.open(linkUrl, '_blank', 'noopener,noreferrer');
     } else {
       toast('No ad link configured — mark as completed', { icon: 'ℹ️' });
