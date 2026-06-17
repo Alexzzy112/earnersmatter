@@ -16,6 +16,7 @@ const paymentAccountRoutes = require('./paymentAccountRoutes');
 const dashboardRoutes = require('./dashboardRoutes');
 const settingsRoutes = require('./settingsRoutes');
 const taskRoutes = require('./taskRoutes');
+const leaderboardRoutes = require('./leaderboardRoutes');
 const adminRoutes = require('./admin/adminRoutes');
 
 router.use('/auth', authRoutes);
@@ -31,6 +32,7 @@ router.use('/payment-account', paymentAccountRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/tasks', taskRoutes);
+router.use('/leaderboard', leaderboardRoutes);
 router.use('/admin', auth, adminMiddleware, adminRoutes);
 
 module.exports = router;
