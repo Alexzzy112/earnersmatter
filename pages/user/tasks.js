@@ -36,13 +36,15 @@ export default function TasksPage() {
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   const handleStartEarns = async (task) => {
+    const linkUrl = task.linkUrl;
+    if (linkUrl) {
+      window.open(linkUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      toast('No ad link configured — mark as completed', { icon: 'ℹ️' });
+    }
     setActionLoading(task._id);
     try {
       const res = await taskAPI.start(task._id);
-      const linkUrl = res.data?.linkUrl || task.linkUrl;
-      if (linkUrl) {
-        window.open(linkUrl, '_blank', 'noopener,noreferrer');
-      }
       setTasks((prev) =>
         prev.map((t) =>
           t._id === task._id ? { ...t, status: 'started' } : t
