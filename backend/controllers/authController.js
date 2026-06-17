@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Notification = require('../models/Notification');
 const PasswordReset = require('../models/PasswordReset');
+const Setting = require('../models/Setting');
 const bcrypt = require('bcryptjs');
 const helpers = require('../utils/helpers');
 const { logAction } = require('../utils/auditLogger');
@@ -13,6 +14,16 @@ const register = async (req, res) => {
 
     if (!username || !email || !phone || !password) {
       return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+    if (!/[A-Z]/.test(password)) {
+      return res.status(400).json({ success: false, message: 'Password must contain an uppercase letter' });
+    }
+    if (!/[0-9]/.test(password)) {
+      return res.status(400).json({ success: false, message: 'Password must contain a number' });
     }
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -37,28 +48,31 @@ const register = async (req, res) => {
 
     const user = await User.create(userData);
 
-    // Welcome bonus
-    const welcomeBonus = 700;
-    user.walletBalance += welcomeBonus;
-    await user.save();
+    // Welcome bonus from settings
+    const welcomeSetting = await Setting.findOne({ key: 'welcomeBonus' });
+    const welcomeBonus = Number(welcomeSetting?.value) || 0;
+    if (welcomeBonus > 0) {
+      user.walletBalance += welcomeBonus;
+      await user.save();
 
-    await Transaction.create({
-      userId: user._id,
-      type: 'bonus',
-      amount: welcomeBonus,
-      balanceBefore: 0,
-      balanceAfter: welcomeBonus,
-      description: 'Welcome bonus',
-      reference: helpers.generateReference(),
-      status: 'completed',
-    });
+      await Transaction.create({
+        userId: user._id,
+        type: 'bonus',
+        amount: welcomeBonus,
+        balanceBefore: 0,
+        balanceAfter: welcomeBonus,
+        description: 'Welcome bonus',
+        reference: helpers.generateReference(),
+        status: 'completed',
+      });
 
-    await Notification.create({
-      userId: user._id,
-      type: 'bonus_credited',
-      title: 'Welcome Bonus Credited',
-      message: `₦${welcomeBonus.toLocaleString()} welcome bonus has been credited to your wallet.`,
-    });
+      await Notification.create({
+        userId: user._id,
+        type: 'bonus_credited',
+        title: 'Welcome Bonus Credited',
+        message: `₦${welcomeBonus.toLocaleString()} welcome bonus has been credited to your wallet.`,
+      });
+    }
 
     const token = helpers.generateToken(user._id);
 
@@ -203,6 +217,13 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+const validatePassword = (password) => {
+  if (password.length < 6) return 'Password must be at least 6 characters';
+  if (!/[A-Z]/.test(password)) return 'Password must contain an uppercase letter';
+  if (!/[0-9]/.test(password)) return 'Password must contain a number';
+  return null;
+};
+
 const resetPassword = async (req, res) => {
   try {
     const { token, password } = req.body;
@@ -210,6 +231,9 @@ const resetPassword = async (req, res) => {
     if (!token || !password) {
       return res.status(400).json({ success: false, message: 'Token and password are required' });
     }
+
+    const pwError = validatePassword(password);
+    if (pwError) return res.status(400).json({ success: false, message: pwError });
 
     const resetRecord = await PasswordReset.findOne({ token, used: false, expiresAt: { $gt: new Date() } });
     if (!resetRecord) {
@@ -288,9 +312,8 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Current password and new password are required' });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
-    }
+    const pwError = validatePassword(newPassword);
+    if (pwError) return res.status(400).json({ success: false, message: pwError });
 
     const user = await User.findById(req.user._id);
     if (!user) {

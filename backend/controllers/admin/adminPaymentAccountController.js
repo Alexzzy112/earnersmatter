@@ -11,12 +11,15 @@ exports.getAllAccounts = async (req, res) => {
   }
 };
 
+const ACCOUNT_ALLOWED_FIELDS = ['accountName', 'accountNumber', 'bank', 'type'];
+
 exports.createAccount = async (req, res) => {
   try {
-    const account = await PaymentAccount.create({
-      ...req.body,
-      createdBy: req.user._id,
-    });
+    const data = { createdBy: req.user._id };
+    for (const field of ACCOUNT_ALLOWED_FIELDS) {
+      if (req.body[field] !== undefined) data[field] = req.body[field];
+    }
+    const account = await PaymentAccount.create(data);
 
     await logAction({
       userId: req.user._id,
@@ -35,7 +38,11 @@ exports.createAccount = async (req, res) => {
 
 exports.updateAccount = async (req, res) => {
   try {
-    const account = await PaymentAccount.findByIdAndUpdate(req.params.id, req.body, {
+    const data = {};
+    for (const field of ACCOUNT_ALLOWED_FIELDS) {
+      if (req.body[field] !== undefined) data[field] = req.body[field];
+    }
+    const account = await PaymentAccount.findByIdAndUpdate(req.params.id, data, {
       new: true,
       runValidators: true,
     });

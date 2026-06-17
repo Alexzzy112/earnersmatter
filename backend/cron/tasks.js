@@ -1,7 +1,8 @@
 const cron = require('node-cron');
 const Task = require('../models/Task');
+const Setting = require('../models/Setting');
 
-const adTemplates = [
+const defaultTemplates = [
   { title: 'Sponsored: Earn More Today', description: 'Check out this exclusive investment opportunity and grow your portfolio faster.', type: 'ad' },
   { title: 'Watch & Earn: Platform Tutorial', description: 'Watch our quick tutorial on maximizing your daily earnings.', type: 'watch' },
   { title: 'Click & Earn: Market Update', description: 'Click to view today\'s market update and stay informed about your investments.', type: 'click' },
@@ -20,13 +21,19 @@ const generateDailyTasks = async () => {
       return { generated: 0, message: 'Tasks already exist for today' };
     }
 
-    const tasks = adTemplates.map((tpl, i) => ({
+    const setting = await Setting.findOne({ key: 'dailyTasks' });
+    let templates = defaultTemplates;
+    if (setting && Array.isArray(setting.value) && setting.value.length > 0) {
+      templates = setting.value;
+    }
+
+    const tasks = templates.map((tpl, i) => ({
       title: tpl.title,
       description: tpl.description,
-      imageUrl: `https://placehold.co/600x200/1a1a2e/e94560?text=Ad+${i + 1}`,
-      linkUrl: '#',
-      reward: 500,
-      type: tpl.type,
+      imageUrl: tpl.imageUrl || `https://placehold.co/600x200/1a1a2e/e94560?text=Ad+${i + 1}`,
+      linkUrl: tpl.linkUrl || '#',
+      reward: tpl.reward || 500,
+      type: tpl.type || 'ad',
       status: 'active',
       forDate: today,
     }));

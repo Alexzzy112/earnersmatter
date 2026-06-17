@@ -5,30 +5,33 @@ const Setting = require('../models/Setting');
 const helpers = require('../utils/helpers');
 const { logAction } = require('../utils/auditLogger');
 
-const WITHDRAWAL_DAYS = [1, 5]; // Monday=1, Friday=5
-
 const createWithdrawal = async (req, res) => {
   try {
+    const settings = await Setting.find({});
+    const settingsMap = {};
+    for (const s of settings) settingsMap[s.key] = s.value;
+
+    const withdrawalDays = settingsMap.withdrawalDays || '1,5';
+    const daysArray = String(withdrawalDays).split(',').map(Number);
     const today = new Date().getDay();
-    if (!WITHDRAWAL_DAYS.includes(today)) {
-      return res.status(400).json({ success: false, message: 'Withdrawals are only available on Monday and Friday' });
+    if (!daysArray.includes(today)) {
+      return res.status(400).json({ success: false, message: 'Withdrawals are not available today' });
     }
 
     const { amount, paymentMethod, accountDetails } = req.body;
+    const parsedAmount = Number(amount);
 
-    if (!amount || amount <= 0) {
+    if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ success: false, message: 'Valid amount is required' });
     }
 
-    const minWithdrawalSetting = await Setting.findOne({ key: 'minWithdrawal' });
-    const maxWithdrawalSetting = await Setting.findOne({ key: 'maxWithdrawal' });
-    const minWithdrawal = minWithdrawalSetting ? minWithdrawalSetting.value : 0;
-    const maxWithdrawal = maxWithdrawalSetting ? maxWithdrawalSetting.value : Infinity;
+    const minWithdrawal = Number(settingsMap.minWithdrawal) || 0;
+    const maxWithdrawal = Number(settingsMap.maxWithdrawal) || Infinity;
 
-    if (amount < minWithdrawal) {
+    if (parsedAmount < minWithdrawal) {
       return res.status(400).json({ success: false, message: `Minimum withdrawal amount is ₦${minWithdrawal.toLocaleString()}` });
     }
-    if (amount > maxWithdrawal) {
+    if (parsedAmount > maxWithdrawal) {
       return res.status(400).json({ success: false, message: `Maximum withdrawal amount is ₦${maxWithdrawal.toLocaleString()}` });
     }
 
@@ -36,16 +39,16 @@ const createWithdrawal = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    if (user.walletBalance < amount) {
+    if (user.walletBalance < parsedAmount) {
       return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
     }
 
-    const charge = helpers.calculateWithdrawalCharge(amount);
-    const netAmount = amount - charge;
+    const chargeRate = Number(settingsMap.withdrawalCharge) || 5;
+    const charge = helpers.calculateWithdrawalCharge(parsedAmount, chargeRate / 100);
 
     const withdrawal = await Withdrawal.create({
       userId: req.user._id,
-      amount,
+      amount: parsedAmount,
       charge,
       paymentMethod,
       accountDetails,
@@ -54,7 +57,10 @@ const createWithdrawal = async (req, res) => {
     await Transaction.create({
       userId: req.user._id,
       type: 'withdrawal',
-      amount,
+      amount: parsedAmount,
+      charge,
+      balanceBefore: user.walletBalance,
+      balanceAfter: user.walletBalance,
       status: 'pending',
       reference: helpers.generateReference(),
     });
@@ -64,7 +70,7 @@ const createWithdrawal = async (req, res) => {
       action: 'withdrawal_created',
       entityType: 'Withdrawal',
       entityId: withdrawal._id,
-      details: { amount, charge, paymentMethod },
+      details: { amount: parsedAmount, charge, paymentMethod },
       req,
     });
 

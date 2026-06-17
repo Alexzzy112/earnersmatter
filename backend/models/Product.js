@@ -49,6 +49,8 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+productSchema.index({ status: 1, price: 1 });
+
 productSchema.virtual('totalReturn').get(function () {
   return this.dailyEarnings * this.duration;
 });

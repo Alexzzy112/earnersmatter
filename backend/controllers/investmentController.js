@@ -78,7 +78,7 @@ const purchaseProduct = async (req, res) => {
       userId: user._id,
       type: 'product_purchase',
       title: 'Product Purchased',
-      message: `You have successfully purchased ${product.name}${quantity > 1 ? ` (x${quantity})` : ''} for $${(product.price * quantity).toFixed(2)}.`
+      message: `You have successfully purchased ${product.name}${quantity > 1 ? ` (x${quantity})` : ''} for ₦${(product.price * quantity).toLocaleString()}.`
     });
 
     // Referral bonus on product purchase

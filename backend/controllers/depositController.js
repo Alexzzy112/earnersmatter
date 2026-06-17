@@ -7,8 +7,9 @@ const { logAction } = require('../utils/auditLogger');
 const createDeposit = async (req, res) => {
   try {
     const { amount } = req.body;
+    const parsedAmount = Number(amount);
 
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+    if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ success: false, message: 'Valid amount is required' });
     }
 
@@ -21,7 +22,7 @@ const createDeposit = async (req, res) => {
 
     const deposit = await Deposit.create({
       userId: req.user._id,
-      amount,
+      amount: parsedAmount,
       paymentAccountId: paymentAccount._id,
       transactionReference: reference,
     });

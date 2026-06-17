@@ -11,9 +11,15 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
+const ALLOWED_FIELDS = ['name', 'description', 'price', 'dailyEarnings', 'duration', 'image', 'minPurchase', 'maxPurchase'];
+
 exports.createProduct = async (req, res) => {
   try {
-    const product = await Product.create(req.body);
+    const data = {};
+    for (const field of ALLOWED_FIELDS) {
+      if (req.body[field] !== undefined) data[field] = req.body[field];
+    }
+    const product = await Product.create(data);
 
     await logAction({
       userId: req.user._id,
@@ -32,7 +38,11 @@ exports.createProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    const data = {};
+    for (const field of ALLOWED_FIELDS) {
+      if (req.body[field] !== undefined) data[field] = req.body[field];
+    }
+    const product = await Product.findByIdAndUpdate(req.params.id, data, {
       new: true,
       runValidators: true,
     });

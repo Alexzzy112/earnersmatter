@@ -20,8 +20,9 @@ const generateToken = (userId) => {
   });
 };
 
-const calculateWithdrawalCharge = (amount) => {
-  return amount * 0.05;
+const calculateWithdrawalCharge = (amount, chargeRate) => {
+  const rate = chargeRate || 0.05;
+  return amount * rate;
 };
 
 const formatCurrency = (amount) => {

@@ -82,7 +82,7 @@ export default function LoginPage() {
               <div>
                 <p className="text-warning-300 text-sm font-medium">Email not verified</p>
                 <p className="text-warning-400/80 text-xs mt-1">
-                  Please check your inbox for the verification email. If you haven't received it, you can{' '}
+                   Please check your inbox for the verification email. If you haven&apos;t received it, you can{' '}
                   <button
                     type="button"
                     onClick={() => toast.success('Verification email resent!')}
@@ -157,7 +157,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-dark-400 text-sm mt-6">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/register" className="text-primary-400 hover:text-primary-300 font-medium">
               Create one
             </Link>

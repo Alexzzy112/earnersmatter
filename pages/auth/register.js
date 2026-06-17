@@ -131,9 +131,9 @@ export default function RegisterPage() {
               </div>
               <h3 className="text-lg font-semibold text-dark-100 mb-2">Verify Your Email</h3>
               <p className="text-dark-400 text-sm mb-4">
-                We've sent a verification email to <span className="text-primary-400">{registeredEmail}</span>. Please check your inbox and click the link to verify your account.
+                We&apos;ve sent a verification email to <span className="text-primary-400">{registeredEmail}</span>. Please check your inbox and click the link to verify your account.
               </p>
-              <p className="text-dark-500 text-xs mb-6">Didn't receive the email? Check your spam folder or click below to resend.</p>
+              <p className="text-dark-500 text-xs mb-6">Didn&apos;t receive the email? Check your spam folder or click below to resend.</p>
               <button
                 type="button"
                 className="w-full py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold rounded-lg transition-all shadow-lg shadow-primary-600/20"

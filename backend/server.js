@@ -11,6 +11,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const connectDB = require('./config/db');
 const routes = require('./routes');
 const uploadsDir = require('./config/upload');
+const sanitizeInput = require('./middleware/sanitize');
 require('./cron/tasks');
 
 const app = express();
@@ -32,10 +33,11 @@ app.get('/api/uploads/:filename', (req, res) => {
 });
 
 app.use(mongoSanitize());
+app.use(sanitizeInput);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting for auth routes
+// Rate limiting
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -44,8 +46,27 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Apply rate limiter to auth routes
+const financialLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Too many requests, please slow down' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  message: { success: false, message: 'Too many requests, please slow down' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.use('/api/auth', authLimiter);
+app.use('/api/deposits', financialLimiter);
+app.use('/api/withdrawals', financialLimiter);
+app.use('/api/investments', financialLimiter);
+app.use('/api', generalLimiter);
 
 // Routes
 app.use('/api', routes);

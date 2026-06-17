@@ -1,8 +1,4 @@
-export async function getServerSideProps() {
-  return { props: {} };
-}
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { dashboardAPI, investmentAPI, walletAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -30,7 +26,7 @@ export default function UserDashboard() {
 
   const d = data || {};
   const recentTransactions = d.recentTransactions || [];
-  const recentInvestments = d.recentInvestments || d.investments || [];
+  const recentInvestments = useMemo(() => d.recentInvestments || d.investments || [], [d.recentInvestments, d.investments]);
 
   useEffect(() => {
     const fetchData = async () => {

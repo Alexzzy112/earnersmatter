@@ -53,4 +53,7 @@ const investmentSchema = new mongoose.Schema(
   }
 );
 
+investmentSchema.index({ userId: 1, status: 1 });
+investmentSchema.index({ nextEarningAt: 1, status: 1 });
+
 module.exports = mongoose.model('Investment', investmentSchema);
