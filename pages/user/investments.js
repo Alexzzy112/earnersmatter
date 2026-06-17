@@ -16,6 +16,12 @@ const statusBadge = (status) => {
   return <span className={map[status] || 'badge badge-neutral'}>{status}</span>;
 };
 
+const calcDaysRemaining = (endDate) => {
+  if (!endDate) return 0;
+  const diff = new Date(endDate) - new Date();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+};
+
 export default function InvestmentsPage() {
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +87,7 @@ export default function InvestmentsPage() {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold text-dark-900 dark:text-white">{inv.product?.name || 'Investment'}</h3>
+                    <h3 className="font-semibold text-dark-900 dark:text-white">{inv.productId?.name || inv.product?.name || 'Investment'}</h3>
                     <p className="text-xs text-dark-400">ID: {inv._id?.slice(-8)}</p>
                   </div>
                   {statusBadge(inv.status)}
@@ -90,11 +96,11 @@ export default function InvestmentsPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-dark-400">Amount Invested</span>
-                    <span className="font-semibold text-dark-900 dark:text-white">₦{Number(inv.amount).toLocaleString()}</span>
+                    <span className="font-semibold text-dark-900 dark:text-white">₦{Number(inv.totalCost || inv.amount).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-dark-400">Daily Earnings</span>
-                    <span className="font-semibold text-success-500">+₦{Number(inv.dailyEarnings || inv.product?.dailyEarnings).toLocaleString()}</span>
+                    <span className="font-semibold text-success-500">+₦{Number(inv.dailyEarnings || inv.productId?.dailyEarnings || inv.product?.dailyEarnings).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-dark-400">Earnings Received</span>
@@ -102,7 +108,7 @@ export default function InvestmentsPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-dark-400">Days Remaining</span>
-                    <span className="font-semibold text-dark-900 dark:text-white">{inv.daysRemaining ?? inv.remainingDays ?? 0}</span>
+                    <span className="font-semibold text-dark-900 dark:text-white">{calcDaysRemaining(inv.endDate)}</span>
                   </div>
                 </div>
               </div>
@@ -126,15 +132,27 @@ export default function InvestmentsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
                   <p className="text-xs text-dark-400">Product</p>
-                  <p className="font-medium text-dark-900 dark:text-white">{selected.product?.name || 'N/A'}</p>
+                  <p className="font-medium text-dark-900 dark:text-white">{selected.productId?.name || selected.product?.name || 'N/A'}</p>
                 </div>
                 <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
                   <p className="text-xs text-dark-400">Status</p>
                   <div>{statusBadge(selected.status)}</div>
                 </div>
                 <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
+                  <p className="text-xs text-dark-400">Quantity</p>
+                  <p className="font-semibold text-dark-900 dark:text-white">{selected.quantity || 1}</p>
+                </div>
+                <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
+                  <p className="text-xs text-dark-400">Unit Price</p>
+                  <p className="font-semibold text-dark-900 dark:text-white">₦{Number(
+                    selected.totalCost && selected.quantity
+                      ? selected.totalCost / selected.quantity
+                      : selected.productId?.price || 0
+                  ).toLocaleString()}</p>
+                </div>
+                <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
                   <p className="text-xs text-dark-400">Amount Invested</p>
-                  <p className="font-semibold text-dark-900 dark:text-white">₦{Number(selected.amount).toLocaleString()}</p>
+                  <p className="font-semibold text-dark-900 dark:text-white">₦{Number(selected.totalCost || selected.amount).toLocaleString()}</p>
                 </div>
                 <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
                   <p className="text-xs text-dark-400">Daily Earnings</p>
@@ -145,8 +163,22 @@ export default function InvestmentsPage() {
                   <p className="font-semibold text-success-500">₦{Number(selected.earningsReceived || 0).toLocaleString()}</p>
                 </div>
                 <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
+                  <p className="text-xs text-dark-400">Total Expected</p>
+                  <p className="font-semibold text-primary-500">₦{Number(
+                    (selected.dailyEarnings || 0) * ((selected.productId?.duration || selected.duration) || 30)
+                  ).toLocaleString()}</p>
+                </div>
+                <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
                   <p className="text-xs text-dark-400">Days Remaining</p>
-                  <p className="font-semibold text-dark-900 dark:text-white">{selected.daysRemaining ?? selected.remainingDays ?? 0}</p>
+                  <p className="font-semibold text-dark-900 dark:text-white">{calcDaysRemaining(selected.endDate)}</p>
+                </div>
+                <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
+                  <p className="text-xs text-dark-400">Start Date</p>
+                  <p className="font-semibold text-dark-900 dark:text-white text-sm">{selected.startDate ? new Date(selected.startDate).toLocaleDateString() : '-'}</p>
+                </div>
+                <div className="p-3 bg-dark-50 dark:bg-dark-800 rounded-lg">
+                  <p className="text-xs text-dark-400">End Date</p>
+                  <p className="font-semibold text-dark-900 dark:text-white text-sm">{selected.endDate ? new Date(selected.endDate).toLocaleDateString() : '-'}</p>
                 </div>
               </div>
 
