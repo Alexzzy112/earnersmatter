@@ -1,20 +1,30 @@
 'use client';
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { authAPI } from '@/lib/api';
 
 const AuthContext = createContext(null);
+const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const inactivityTimer = useRef(null);
+
+  const clearInactivityTimer = useCallback(() => {
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = null;
+    }
+  }, []);
 
   const logout = useCallback(() => {
+    clearInactivityTimer();
     localStorage.removeItem('token');
     localStorage.removeItem('em_welcome_seen');
     setToken(null);
     setUser(null);
-  }, []);
+  }, [clearInactivityTimer]);
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
@@ -31,6 +41,34 @@ export function AuthProvider({ children }) {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!token) {
+      clearInactivityTimer();
+      return;
+    }
+
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('em_welcome_seen');
+        setToken(null);
+        setUser(null);
+        window.location.href = '/auth/login';
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    resetTimer();
+
+    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    events.forEach((event) => window.addEventListener(event, resetTimer));
+
+    return () => {
+      clearTimeout(inactivityTimer.current);
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, [token, clearInactivityTimer]);
 
   const login = useCallback(async (email, password) => {
     const responseBody = await authAPI.login({ email, password });
