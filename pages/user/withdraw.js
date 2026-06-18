@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { withdrawalAPI, authAPI, settingsAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { FiArrowUpRight, FiRefreshCw, FiAlertCircle, FiCheckCircle, FiInfo, FiClock, FiCalendar } from 'react-icons/fi';
+import Modal from '@/components/shared/Modal';
+import { FiArrowUpRight, FiRefreshCw, FiAlertCircle, FiCheckCircle, FiInfo, FiClock, FiCalendar, FiXCircle, FiClock as FiHourglass } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const statusBadge = (status) => {
@@ -41,12 +42,13 @@ export default function WithdrawPage() {
   const [error, setError] = useState(null);
   const [amount, setAmount] = useState('');
   const [accountDetails, setAccountDetails] = useState('');
-  const [validation, setValidation] = useState({});
+
   const [chargeRate, setChargeRate] = useState(0.05);
 
   const [withdrawalType, setWithdrawalType] = useState('daily_task');
   const [walletBalance, setWalletBalance] = useState(0);
   const [referralBalance, setReferralBalance] = useState(0);
+  const [errorModal, setErrorModal] = useState(null);
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
@@ -115,30 +117,68 @@ export default function WithdrawPage() {
     }
   };
 
-  const validate = () => {
-    const errors = {};
+  const checkWithdrawalConditions = () => {
     if (!canSubmit) {
       if (isDailyTask) {
-        errors.day = 'Daily Task withdrawals are only available on Monday and Friday';
+        setErrorModal({
+          icon: FiCalendar,
+          color: 'amber',
+          title: 'Wrong Day for Withdrawal',
+          message: `Daily Task withdrawals are only available on Monday and Friday. Next available day: ${nextWithdrawalDay()}.`,
+        });
       } else {
-        errors.day = 'Referral Bonus withdrawals are only available from 7:00 AM to 12:00 PM daily';
+        setErrorModal({
+          icon: FiHourglass,
+          color: 'amber',
+          title: 'Withdrawal Window Closed',
+          message: 'Referral Bonus withdrawals are only available from 7:00 AM to 12:00 PM (noon) daily. Please come back during these hours.',
+        });
       }
+      return false;
     }
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
-      errors.amount = 'Please enter a valid amount';
-    } else if (numericAmount < minWithdrawal) {
-      errors.amount = `Minimum withdrawal is ₦${minWithdrawal.toLocaleString()}`;
+      setErrorModal({
+        icon: FiAlertCircle,
+        color: 'red',
+        title: 'Invalid Amount',
+        message: 'Please enter a valid withdrawal amount.',
+      });
+      return false;
+    }
+    if (numericAmount < minWithdrawal) {
+      setErrorModal({
+        icon: FiAlertCircle,
+        color: 'red',
+        title: 'Below Minimum Amount',
+        message: `Minimum withdrawal amount is ₦${minWithdrawal.toLocaleString()}. Please increase the amount.`,
+      });
+      return false;
+    }
+    const availableBalance = isDailyTask ? walletBalance : referralBalance;
+    if (numericAmount > availableBalance) {
+      setErrorModal({
+        icon: FiXCircle,
+        color: 'red',
+        title: 'Insufficient Balance',
+        message: `Your ${isDailyTask ? 'wallet' : 'referral'} balance of ₦${availableBalance.toLocaleString()} is not enough. Please enter a lower amount.`,
+      });
+      return false;
     }
     if (!accountDetails.trim()) {
-      errors.accountDetails = 'Please save your bank account details first';
+      setErrorModal({
+        icon: FiAlertCircle,
+        color: 'red',
+        title: 'Bank Account Required',
+        message: 'Please save your bank account details first before submitting a withdrawal.',
+      });
+      return false;
     }
-    setValidation(errors);
-    return Object.keys(errors).length === 0;
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!checkWithdrawalConditions()) return;
 
     setSubmitting(true);
     try {
@@ -367,13 +407,12 @@ export default function WithdrawPage() {
                   <input
                     type="number"
                     value={amount}
-                    onChange={(e) => { setAmount(e.target.value); setValidation({}); }}
+                    onChange={(e) => { setAmount(e.target.value); setErrorModal(null); }}
                     placeholder="0.00"
                     className="input-field pl-8"
                   />
                 </div>
-                {validation.day && <p className="text-xs text-danger-500 mt-1">{validation.day}</p>}
-                {validation.amount && <p className="text-xs text-danger-500 mt-1">{validation.amount}</p>}
+
               </div>
 
               {numericAmount > 0 && (
@@ -400,13 +439,13 @@ export default function WithdrawPage() {
                   rows={3}
                   className="input-field resize-none bg-dark-50 dark:bg-dark-800 cursor-not-allowed"
                 />
-                {validation.accountDetails && <p className="text-xs text-danger-500 mt-1">{validation.accountDetails}</p>}
+
                 <p className="text-xs text-dark-400 mt-1">
                   Your saved bank account will be used for this withdrawal
                 </p>
               </div>
 
-              <button type="submit" className="btn-danger w-full" disabled={submitting || !canSubmit}>
+              <button type="submit" className="btn-danger w-full" disabled={submitting}>
                 {submitting ? 'Processing...' : <><FiArrowUpRight size={16} /> Submit Withdrawal</>}
               </button>
             </form>
@@ -458,6 +497,24 @@ export default function WithdrawPage() {
           </div>
         </div>
       </div>
+
+      {errorModal && (
+        <Modal onClose={() => setErrorModal(null)}>
+          <div className="text-center">
+            <div className={`mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center bg-${errorModal.color}-100 dark:bg-${errorModal.color}-900/30`}>
+              <errorModal.icon className={`w-6 h-6 text-${errorModal.color}-600 dark:text-${errorModal.color}-400`} />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{errorModal.title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{errorModal.message}</p>
+            <button
+              onClick={() => setErrorModal(null)}
+              className="mt-6 w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </Modal>
+      )}
     </DashboardLayout>
   );
 }
