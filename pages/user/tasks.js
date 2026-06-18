@@ -42,8 +42,6 @@ export default function TasksPage() {
         linkUrl = 'https://' + linkUrl;
       }
       window.open(linkUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      toast('No ad link configured — mark as completed', { icon: 'ℹ️' });
     }
     setActionLoading(task._id);
     try {

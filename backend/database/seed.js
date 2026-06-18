@@ -33,6 +33,8 @@ const seed = async () => {
       { key: 'maintenanceMode', value: false },
       { key: 'contactTelegramChannel', value: 'https://t.me/earnersmatter' },
       { key: 'contactTelegramAdmin', value: 'https://t.me/earnersmatter_admin' },
+      { key: 'defaultAdLink', value: '' },
+      { key: 'defaultAdImage', value: '' },
     ];
     await Setting.insertMany(settings);
     console.log('Settings created successfully.');

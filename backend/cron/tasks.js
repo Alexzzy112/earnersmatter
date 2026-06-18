@@ -30,6 +30,10 @@ const generateDailyTasks = async () => {
     const defaultAdLink = adLinkSetting?.value || '';
     const defaultAdImage = adImageSetting?.value || '';
 
+    if (!defaultAdLink) {
+      console.warn('⚠️  defaultAdLink setting is empty — tasks will have no link URL. Set it in Admin → Settings → Tasks.');
+    }
+
     let templates = defaultTemplates;
     if (dailyTasksSetting && Array.isArray(dailyTasksSetting.value) && dailyTasksSetting.value.length > 0) {
       templates = dailyTasksSetting.value;
