@@ -58,10 +58,10 @@ const createWithdrawal = async (req, res) => {
       }
 
       const hour = new Date().getHours();
-      if (hour < 7 || hour >= 12) {
+      if (hour < 8 || hour >= 15) {
         return res.status(400).json({
           success: false,
-          message: 'Referral Bonus withdrawals are only available from 7:00 AM to 12:00 PM daily',
+          message: 'Referral Bonus withdrawals are only available from 8:00 AM to 3:00 PM daily',
         });
       }
 
