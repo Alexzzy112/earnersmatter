@@ -13,10 +13,13 @@ A Nigerian investment platform built with Next.js, Express, and MongoDB — feat
 
 - User registration with ₦1,000 welcome bonus
 - Investment products with daily earnings (15% per day, 30-day cycles)
-- Daily task system — 5 tasks/day, earn your daily quota
+- Daily task system — 5 tasks/day, uses admin's default ad link
+- Auto-logout after 15 minutes of inactivity
 - Referral program — 30% one-time commission on referred user's first investment
 - Wallet management — deposits, withdrawals, transaction history
 - Admin dashboard — manage users, products, deposits, withdrawals, settings
+- Admin task management — create, edit, delete tasks; reset today's tasks (reverts user balances)
+- Admin withdrawal revert — revert single or bulk withdrawals
 - Leaderboard — top investors & weekly growers
 - Withdrawal system with bank account management
 
@@ -65,6 +68,21 @@ npm run dev
 - Email: `admin@earnersmatter.com`
 - Password: `Admin@12345`
 
+### Product Prices (Seeded)
+
+| Product | Price | Daily Earnings |
+|---------|-------|---------------|
+| iPhone 14 Pro Max | ₦3,000 | ₦450 (15%) |
+| iPhone 13 Pro Max | ₦4,000 | ₦600 (15%) |
+| iPhone 12 Pro Max | ₦5,000 | ₦750 (15%) |
+| Samsung Galaxy S24 | ₦3,000 | ₦450 (15%) |
+| Samsung Galaxy S23 | ₦4,000 | ₦600 (15%) |
+| MacBook Pro M3 | ₦7,000 | ₦1,050 (15%) |
+| PS5 | ₦5,000 | ₦750 (15%) |
+| Apple Watch | ₦3,000 | ₦450 (15%) |
+| iPhone 7 | ₦4,000 | ₦600 (15%) |
+| iPhone 8 | ₦8,000 | ₦1,200 (15%) |
+
 ## Project Structure
 
 ```
@@ -72,16 +90,18 @@ npm run dev
 ├── backend/
 │   ├── config/           # DB connection
 │   ├── controllers/      # Route handlers
+│   │   └── admin/        # Admin-only controllers
 │   ├── cron/             # Scheduled tasks & earnings
 │   ├── database/         # Seed script
 │   ├── middleware/       # Auth, sanitize, rate limiting
 │   ├── models/           # Mongoose schemas
 │   ├── routes/           # Express routes
+│   │   └── admin/        # Admin-only routes
 │   └── utils/            # Helpers, audit logger
 ├── components/           # React components
 │   ├── layout/           # Dashboard/admin layouts
 │   └── shared/           # Reusable UI components
-├── lib/                  # API client (Axios)
+├── context/              # React context providers (AuthContext with auto-logout)
 ├── pages/                # Next.js pages
 │   ├── admin/            # Admin panel pages
 │   └── user/             # User dashboard pages
@@ -104,3 +124,6 @@ npm run dev
 | `/api/leaderboard` | Top investors |
 | `/api/settings` | Public settings (deposit, withdrawal, contact) |
 | `/api/admin` | Admin management APIs |
+| `/api/admin/tasks/reset` | Reset today's tasks (reverts user balances) |
+| `/api/admin/withdrawals/:id/revert` | Revert a single withdrawal |
+| `/api/admin/withdrawals/revert-all` | Revert all withdrawals by status |
