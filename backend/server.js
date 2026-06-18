@@ -139,8 +139,14 @@ app.use((err, req, res, next) => {
 
 // Start server only when run directly (not on Vercel)
 if (!process.env.VERCEL) {
-  connectDB().then(() => {
+  connectDB().then(async () => {
     const cronJobs = require('./cron/tasks');
+    try {
+      const result = await cronJobs.generateDailyTasks();
+      console.log(result.message);
+    } catch (err) {
+      console.error('Initial task generation error:', err.message);
+    }
     require('./cron/earnings');
     app.listen(process.env.PORT || 5000, () => {
       console.log(`Server running on port ${process.env.PORT || 5000} in ${process.env.NODE_ENV || 'development'} mode`);
