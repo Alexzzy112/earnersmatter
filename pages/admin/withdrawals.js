@@ -149,6 +149,7 @@ export default function AdminWithdrawals() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Charge</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Net</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Method</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
@@ -157,9 +158,9 @@ export default function AdminWithdrawals() {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-dark-700">
                 {loading ? (
-                  <tr><td colSpan={9} className="px-4 py-12"><LoadingSpinner className="mx-auto" /></td></tr>
+                  <tr><td colSpan={10} className="px-4 py-12"><LoadingSpinner className="mx-auto" /></td></tr>
                 ) : withdrawals.length === 0 ? (
-                  <tr><td colSpan={9} className="px-4 py-12"><EmptyState icon={FiArrowUpRight} title="No withdrawals found" /></td></tr>
+                  <tr><td colSpan={10} className="px-4 py-12"><EmptyState icon={FiArrowUpRight} title="No withdrawals found" /></td></tr>
                 ) : (
                   withdrawals.map((wd) => (
                     <tr key={wd._id} className="hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
@@ -168,6 +169,15 @@ export default function AdminWithdrawals() {
                       <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">₦{(wd.amount || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">₦{(wd.charge || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">₦{(wd.netAmount || wd.amount || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                          wd.withdrawalType === 'referral_bonus'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                        }`}>
+                          {wd.withdrawalType === 'referral_bonus' ? 'Referral' : 'Daily Task'}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{wd.method || wd.paymentMethod || '—'}</td>
                       <td className="px-4 py-3"><StatusBadge status={wd.status} /></td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{wd.createdAt ? new Date(wd.createdAt).toLocaleString() : '—'}</td>
