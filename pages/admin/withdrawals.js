@@ -13,6 +13,17 @@ import {
 
 const statusFilters = ['all', 'pending', 'approved', 'rejected', 'completed'];
 
+const parseBankName = (details) => {
+  if (!details) return '—';
+  const match = details.match(/^Bank:\s*(.+)$/m);
+  return match ? match[1] : '—';
+};
+
+const parseAccountDetails = (details) => {
+  if (!details) return [];
+  return details.split('\n').filter(Boolean);
+};
+
 export default function AdminWithdrawals() {
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +36,7 @@ export default function AdminWithdrawals() {
   const [rejectNote, setRejectNote] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [viewDetails, setViewDetails] = useState(null);
 
   const fetchWithdrawals = useCallback(async () => {
     setLoading(true);
@@ -167,9 +179,9 @@ export default function AdminWithdrawals() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Charge</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Net</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Credit</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Method</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Bank</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
@@ -187,7 +199,7 @@ export default function AdminWithdrawals() {
                       <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{wd.userId?.username || wd.userId?.email || 'Unknown'}</td>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">₦{(wd.amount || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">₦{(wd.charge || 0).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">₦{(wd.netAmount || wd.amount || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">₦{((wd.amount || 0) - (wd.charge || 0)).toLocaleString()}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                           wd.withdrawalType === 'referral_bonus'
@@ -197,11 +209,14 @@ export default function AdminWithdrawals() {
                           {wd.withdrawalType === 'referral_bonus' ? 'Referral' : 'Daily Task'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{wd.method || wd.paymentMethod || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{parseBankName(wd.accountDetails)}</td>
                       <td className="px-4 py-3"><StatusBadge status={wd.status} /></td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{wd.createdAt ? new Date(wd.createdAt).toLocaleString() : '—'}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => setViewDetails(wd)} className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="View Details">
+                            <FiSearch className="w-4 h-4" />
+                          </button>
                           {wd.status === 'pending' && (
                             <>
                               <button onClick={() => setConfirmAction({ id: wd._id, action: 'approve' })} className="p-1.5 rounded-lg text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title="Approve">
@@ -340,6 +355,101 @@ export default function AdminWithdrawals() {
               {saving ? 'Processing...' : 'Reject'}
             </button>
           </div>
+        </Modal>
+
+        {/* View Details Modal */}
+        <Modal isOpen={!!viewDetails} onClose={() => setViewDetails(null)} title="Withdrawal Details" size="lg">
+          {viewDetails && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Withdrawal ID</label>
+                  <p className="text-sm font-mono text-gray-900 dark:text-white mt-1">{viewDetails._id}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</label>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">{viewDetails.userId?.username || viewDetails.userId?.email || 'Unknown'}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</label>
+                  <p className="mt-1"><StatusBadge status={viewDetails.status} /></p>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Withdrawal Type</label>
+                  <p className="text-sm text-gray-900 dark:text-white mt-1 capitalize">{viewDetails.withdrawalType === 'referral_bonus' ? 'Referral Bonus' : 'Daily Task'}</p>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-dark-700 pt-4">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Financial Details</h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                    <label className="text-xs text-gray-500 dark:text-gray-400">Amount Requested</label>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">₦{(viewDetails.amount || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                    <label className="text-xs text-gray-500 dark:text-gray-400">Charge</label>
+                    <p className="text-lg font-bold text-red-600 dark:text-red-400">-₦{(viewDetails.charge || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <label className="text-xs text-green-600 dark:text-green-400 font-medium">Amount to Credit</label>
+                    <p className="text-lg font-bold text-green-700 dark:text-green-400">₦{((viewDetails.amount || 0) - (viewDetails.charge || 0)).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-dark-700 pt-4">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Bank Account Details</h4>
+                <div className="p-3 bg-gray-50 dark:bg-dark-700 rounded-lg space-y-1">
+                  {parseAccountDetails(viewDetails.accountDetails).length > 0 ? (
+                    parseAccountDetails(viewDetails.accountDetails).map((line, i) => (
+                      <p key={i} className="text-sm text-gray-700 dark:text-gray-300">{line}</p>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-400">No bank details provided</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-dark-700 pt-4">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Timeline</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <label className="text-xs text-gray-500 dark:text-gray-400">Created</label>
+                    <p className="text-gray-900 dark:text-white mt-1">{viewDetails.createdAt ? new Date(viewDetails.createdAt).toLocaleString() : '—'}</p>
+                  </div>
+                  {viewDetails.reviewedAt && (
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400">Reviewed</label>
+                      <p className="text-gray-900 dark:text-white mt-1">{new Date(viewDetails.reviewedAt).toLocaleString()}</p>
+                    </div>
+                  )}
+                  {viewDetails.completedAt && (
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400">Completed</label>
+                      <p className="text-gray-900 dark:text-white mt-1">{new Date(viewDetails.completedAt).toLocaleString()}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {viewDetails.adminNote && (
+                <div className="border-t border-gray-200 dark:border-dark-700 pt-4">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Admin Note</h4>
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <p className="text-sm text-red-700 dark:text-red-400">{viewDetails.adminNote}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-dark-700">
+                <button onClick={() => setViewDetails(null)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700">
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </Modal>
       </div>
     </AdminLayout>
