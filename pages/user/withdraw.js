@@ -201,8 +201,14 @@ export default function WithdrawPage() {
       toast.success('Withdrawal request submitted successfully!');
       setAmount('');
 
-      const res = await withdrawalAPI.getAll();
-      setWithdrawals(res.data.withdrawals || res.data);
+      const [wdRes, userRes] = await Promise.all([
+        withdrawalAPI.getAll(),
+        authAPI.getMe(),
+      ]);
+      setWithdrawals(wdRes.data.withdrawals || wdRes.data);
+      const u = userRes.data || userRes.user || userRes;
+      setWalletBalance(u.walletBalance || 0);
+      setReferralBalance(u.referralBalance || 0);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to submit withdrawal');
     } finally {
