@@ -136,12 +136,21 @@ export default function WithdrawPage() {
       }
       return false;
     }
-    if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
+    if (!amount || !amount.trim()) {
+      setErrorModal({
+        icon: FiAlertCircle,
+        color: 'red',
+        title: 'Amount Required',
+        message: 'Please enter the amount you wish to withdraw.',
+      });
+      return false;
+    }
+    if (isNaN(numericAmount) || numericAmount <= 0) {
       setErrorModal({
         icon: FiAlertCircle,
         color: 'red',
         title: 'Invalid Amount',
-        message: 'Please enter a valid withdrawal amount.',
+        message: 'Please enter a valid withdrawal amount greater than zero.',
       });
       return false;
     }
