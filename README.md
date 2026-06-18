@@ -12,7 +12,7 @@ A Nigerian investment platform built with Next.js, Express, and MongoDB — feat
 ## Features
 
 - User registration with ₦1,000 welcome bonus
-- Investment products with daily earnings (18% per day, 30-day cycles)
+- Investment products with daily earnings (15% per day, 30-day cycles)
 - Daily task system — 5 tasks/day, earn your daily quota
 - Referral program — 30% one-time commission on referred user's first investment
 - Wallet management — deposits, withdrawals, transaction history
