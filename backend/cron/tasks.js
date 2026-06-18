@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const Task = require('../models/Task');
+const UserTask = require('../models/UserTask');
 const Setting = require('../models/Setting');
 
 const defaultTemplates = [
@@ -72,9 +73,10 @@ const resetDailyTasks = async () => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    const deletedUserTasks = await UserTask.deleteMany({ forDate: { $gte: today, $lt: tomorrow } });
     await Task.deleteMany({ forDate: { $gte: today, $lt: tomorrow } });
     const result = await generateDailyTasks();
-    return { ...result, message: `Tasks reset — ${result.message}` };
+    return { ...result, message: `Tasks reset — cleared ${deletedUserTasks.deletedCount} user progress, ${result.message}` };
   } catch (error) {
     console.error('Error resetting daily tasks:', error.message);
     return { generated: 0, message: error.message };
