@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const Task = require('../models/Task');
 const UserTask = require('../models/UserTask');
+const User = require('../models/User');
 const Setting = require('../models/Setting');
 
 const defaultTemplates = [
@@ -73,10 +74,22 @@ const resetDailyTasks = async () => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    const completedUserTasks = await UserTask.find({ forDate: { $gte: today, $lt: tomorrow }, status: 'completed' });
+    const refundByUser = {};
+    for (const ut of completedUserTasks) {
+      if (!refundByUser[ut.userId]) refundByUser[ut.userId] = 0;
+      refundByUser[ut.userId] += ut.reward;
+    }
+    for (const [userId, totalReward] of Object.entries(refundByUser)) {
+      await User.updateOne({ _id: userId }, { $inc: { walletBalance: -totalReward } });
+    }
+    const totalRefunded = Object.values(refundByUser).reduce((sum, v) => sum + v, 0);
+
     const deletedUserTasks = await UserTask.deleteMany({ forDate: { $gte: today, $lt: tomorrow } });
     await Task.deleteMany({ forDate: { $gte: today, $lt: tomorrow } });
     const result = await generateDailyTasks();
-    return { ...result, message: `Tasks reset — cleared ${deletedUserTasks.deletedCount} user progress, ${result.message}` };
+    const userCount = Object.keys(refundByUser).length;
+    return { ...result, message: `Tasks reset — refunded ₦${totalRefunded.toLocaleString()} from ${userCount} user(s), cleared ${deletedUserTasks.deletedCount} records, ${result.message}` };
   } catch (error) {
     console.error('Error resetting daily tasks:', error.message);
     return { generated: 0, message: error.message };
