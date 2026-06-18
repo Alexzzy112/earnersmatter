@@ -36,16 +36,14 @@ export default function TasksPage() {
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   const handleStartEarns = async (task) => {
-    let linkUrl = task.linkUrl;
-    if (linkUrl && linkUrl !== '#') {
-      if (!linkUrl.startsWith('http://') && !linkUrl.startsWith('https://')) {
-        linkUrl = 'https://' + linkUrl;
-      }
-      window.open(linkUrl, '_blank', 'noopener,noreferrer');
-    }
     setActionLoading(task._id);
     try {
       const res = await taskAPI.start(task._id);
+      const linkUrl = res?.data?.linkUrl;
+      if (linkUrl && linkUrl !== '#') {
+        const url = linkUrl.startsWith('http://') || linkUrl.startsWith('https://') ? linkUrl : 'https://' + linkUrl;
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
       setTasks((prev) =>
         prev.map((t) =>
           t._id === task._id ? { ...t, status: 'started' } : t

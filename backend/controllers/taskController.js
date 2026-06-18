@@ -5,6 +5,7 @@ const Transaction = require('../models/Transaction');
 const Investment = require('../models/Investment');
 const EarningSchedule = require('../models/EarningSchedule');
 const Notification = require('../models/Notification');
+const Setting = require('../models/Setting');
 const helpers = require('../utils/helpers');
 const { generateDailyTasks } = require('../cron/tasks');
 
@@ -114,6 +115,10 @@ const startTask = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
 
+    const adLinkSetting = await Setting.findOne({ key: 'defaultAdLink' });
+    const defaultAdLink = adLinkSetting?.value || '';
+    const linkUrl = task.linkUrl || defaultAdLink;
+
     const existing = await UserTask.findOne({ userId: req.user._id, taskId });
     if (existing && existing.status === 'completed') {
       return res.status(400).json({ success: false, message: 'Task already completed' });
@@ -126,7 +131,7 @@ const startTask = async (req, res) => {
       return res.status(200).json({
         success: true,
         message: 'Task already started',
-        data: { linkUrl: task.linkUrl, _id: task._id },
+        data: { linkUrl, _id: task._id },
       });
     }
 
@@ -146,7 +151,7 @@ const startTask = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Task started',
-      data: { linkUrl: task.linkUrl, _id: task._id },
+      data: { linkUrl, _id: task._id },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
