@@ -19,9 +19,12 @@ A Nigerian investment platform built with Next.js, Express, and MongoDB — feat
 - Wallet management — deposits, withdrawals, transaction history
 - Admin dashboard — manage users, products, deposits, withdrawals, settings
 - Admin task management — create, edit, delete tasks; reset today's tasks (reverts user balances)
-- Admin withdrawal revert — revert single or bulk withdrawals
+- Admin withdrawal management — approve, reject (with note), complete, revert single/bulk, delete single/bulk; detail modal with bank info & net credit
+- Admin audit log — track all actions across the platform
 - Leaderboard — top investors & weekly growers
 - Withdrawal system with bank account management
+- Withdrawal validation modals — professional popup messages for time/day restrictions, insufficient balance, minimum amount, missing bank details
+- Referral balance — separate from wallet balance; referral bonuses credited to referral balance, withdrawn during 8 AM–3 PM daily window
 
 ## Getting Started
 
@@ -127,3 +130,4 @@ npm run dev
 | `/api/admin/tasks/reset` | Reset today's tasks (reverts user balances) |
 | `/api/admin/withdrawals/:id/revert` | Revert a single withdrawal |
 | `/api/admin/withdrawals/revert-all` | Revert all withdrawals by status |
+| `/api/admin/withdrawals/delete-all` | Delete all withdrawals by status |
