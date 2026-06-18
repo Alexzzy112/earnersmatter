@@ -56,7 +56,7 @@ export default function WithdrawPage() {
   const today = new Date().getDay();
   const currentHour = new Date().getHours();
   const isAllowedDay = WITHDRAWAL_DAYS.includes(today);
-  const isReferralTime = currentHour >= 7 && currentHour < 12;
+  const isReferralTime = currentHour >= 8 && currentHour < 15;
 
   const numericAmount = parseFloat(amount) || 0;
   const charge = numericAmount * chargeRate;
@@ -131,7 +131,7 @@ export default function WithdrawPage() {
           icon: FiClock,
           color: 'amber',
           title: 'Withdrawal Window Currently Closed',
-          message: 'Referral Bonus withdrawals can only be processed between <strong>7:00 AM</strong> and <strong>12:00 PM (noon)</strong> daily. The withdrawal window is currently closed. Please try again during operating hours.',
+          message: 'Referral Bonus withdrawals can only be processed between <strong>8:00 AM</strong> and <strong>3:00 PM</strong> daily. The withdrawal window is currently closed. Please try again during operating hours.',
         });
       }
       return false;
@@ -256,7 +256,7 @@ export default function WithdrawPage() {
             <div>
               <h3 className="font-semibold text-warning-700 dark:text-warning-400 text-sm">Referral Bonus Withdrawal Window Closed</h3>
               <p className="text-sm text-warning-600 dark:text-warning-300 mt-1">
-                Referral Bonus withdrawals are only available from 7:00 AM to 12:00 PM (noon) daily. Please come back during these hours.
+                Referral Bonus withdrawals are only available from 8:00 AM to 3:00 PM daily. Please come back during these hours.
               </p>
             </div>
           </div>
@@ -379,7 +379,7 @@ export default function WithdrawPage() {
                 </div>
                 <ul className="text-xs text-green-600 dark:text-green-300 space-y-1 ml-5 list-disc">
                   <li>Minimum withdrawal: <strong>₦2,000</strong></li>
-                  <li>Available <strong>every day</strong> from <strong>7:00 AM to 12:00 PM</strong> (noon)</li>
+                  <li>Available <strong>every day</strong> from <strong>8:00 AM to 3:00 PM</strong></li>
                   <li>Withdraw commissions earned from referring new members</li>
                   <li>You can only withdraw up to your available referral bonus balance</li>
                 </ul>
@@ -400,7 +400,7 @@ export default function WithdrawPage() {
                 <>
                   <FiClock size={14} className="text-primary-600 dark:text-primary-400" />
                   <p className="text-xs text-primary-700 dark:text-primary-400 font-medium">
-                    Withdrawal Hours: <strong>7:00 AM — 12:00 PM</strong> (Daily)
+                    Withdrawal Hours: <strong>8:00 AM — 3:00 PM</strong> (Daily)
                     {isReferralTime && <span className="text-success-500 ml-1">— Open Now</span>}
                   </p>
                 </>
