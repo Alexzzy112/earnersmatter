@@ -1,5 +1,5 @@
 const Task = require('../../models/Task');
-const { generateDailyTasks } = require('../../cron/tasks');
+const { generateDailyTasks, resetDailyTasks } = require('../../cron/tasks');
 const { logAction } = require('../../utils/auditLogger');
 
 exports.getAllTasks = async (req, res) => {
@@ -119,6 +119,24 @@ exports.generateTasks = async (req, res) => {
     await logAction({
       userId: req.user._id,
       action: 'tasks_generated',
+      entityType: 'Task',
+      details: result,
+      req,
+    });
+
+    res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.resetTasks = async (req, res) => {
+  try {
+    const result = await resetDailyTasks();
+
+    await logAction({
+      userId: req.user._id,
+      action: 'tasks_reset',
       entityType: 'Task',
       details: result,
       req,

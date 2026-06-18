@@ -83,7 +83,7 @@ export default function AdminTasks() {
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const res = await adminAPI.generateTasks();
+      const res = await adminAPI.resetTasks();
       toast.success(res.message || 'Daily tasks generated');
       fetchTasks();
     } catch (err) {

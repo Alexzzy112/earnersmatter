@@ -98,6 +98,7 @@ router.post('/tasks', adminTaskController.createTask);
 router.put('/tasks/:id', adminTaskController.updateTask);
 router.delete('/tasks/:id', adminTaskController.deleteTask);
 router.post('/tasks/generate', adminTaskController.generateTasks);
+router.post('/tasks/reset', adminTaskController.resetTasks);
 
 // Reseed
 router.post('/reseed', adminReseedController.reseed);

@@ -65,4 +65,20 @@ cron.schedule('0 0 * * *', () => {
     .catch((err) => console.error('Task generation cron failed:', err.message));
 });
 
-module.exports = { generateDailyTasks };
+const resetDailyTasks = async () => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    await Task.deleteMany({ forDate: { $gte: today, $lt: tomorrow } });
+    const result = await generateDailyTasks();
+    return { ...result, message: `Tasks reset — ${result.message}` };
+  } catch (error) {
+    console.error('Error resetting daily tasks:', error.message);
+    return { generated: 0, message: error.message };
+  }
+};
+
+module.exports = { generateDailyTasks, resetDailyTasks };
