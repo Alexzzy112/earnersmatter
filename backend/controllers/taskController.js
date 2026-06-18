@@ -6,6 +6,7 @@ const Investment = require('../models/Investment');
 const EarningSchedule = require('../models/EarningSchedule');
 const Notification = require('../models/Notification');
 const helpers = require('../utils/helpers');
+const { generateDailyTasks } = require('../cron/tasks');
 
 const TASKS_PER_DAY = 5;
 
@@ -28,10 +29,18 @@ const getTodayTasks = async (req, res) => {
           .reduce((sum, inv) => sum + (inv.dailyEarnings || 0), 0)
       : 0;
 
-    const tasks = await Task.find({
+    let tasks = await Task.find({
       forDate: { $gte: today, $lt: tomorrow },
       status: 'active',
     }).sort({ createdAt: 1 });
+
+    if (tasks.length === 0) {
+      await generateDailyTasks();
+      tasks = await Task.find({
+        forDate: { $gte: today, $lt: tomorrow },
+        status: 'active',
+      }).sort({ createdAt: 1 });
+    }
 
     const userTasks = await UserTask.find({
       userId: req.user._id,
