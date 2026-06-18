@@ -30,13 +30,13 @@ const getContactSettings = async (req, res) => {
 
 const getWithdrawalSettings = async (req, res) => {
   try {
-    const keys = ['minWithdrawal', 'maxWithdrawal', 'chargeRate'];
+    const keys = ['minWithdrawal', 'maxWithdrawal', 'withdrawalCharge'];
     const settings = await Setting.find({ key: { $in: keys } });
     const data = {};
     for (const s of settings) {
       data[s.key] = s.value;
     }
-    if (!data.chargeRate) data.chargeRate = 0.05;
+    data.chargeRate = data.withdrawalCharge ? Number(data.withdrawalCharge) / 100 : 0.05;
     if (!data.minWithdrawal) data.minWithdrawal = 2500;
     res.status(200).json({ success: true, data });
   } catch (error) {
