@@ -14,7 +14,7 @@ const getReferrals = async (req, res) => {
 
 const getReferralStats = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('referralCode referralEarnings');
+    const user = await User.findById(req.user._id).select('referralCode referralEarnings referralBalance');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -26,6 +26,7 @@ const getReferralStats = async (req, res) => {
       data: {
         totalReferrals,
         totalEarnings: user.referralEarnings,
+        referralBalance: user.referralBalance,
         referralCode: user.referralCode,
       },
     });

@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
+    referralBalance: {
+      type: Number,
+      default: 0,
+    },
     referralEarnings: {
       type: Number,
       default: 0,

@@ -23,6 +23,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [balance, setBalance] = useState(0);
+  const [referralBalance, setReferralBalance] = useState(0);
 
   const d = data || {};
   const recentTransactions = d.recentTransactions || [];
@@ -40,6 +41,7 @@ export default function UserDashboard() {
         dashData.recentInvestments = invRes?.data ?? invRes ?? [];
         setData(dashData);
         setBalance(balanceRes.data?.walletBalance || balanceRes?.walletBalance || 0);
+        setReferralBalance(balanceRes.data?.referralBalance || 0);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load dashboard data');
       } finally {
@@ -63,6 +65,7 @@ export default function UserDashboard() {
 
   const stats = [
     { title: 'Wallet Balance', value: `₦${Number(balance).toLocaleString()}`, icon: FiDollarSign, color: 'blue' },
+    { title: 'Referral Balance', value: `₦${Number(referralBalance).toLocaleString()}`, icon: FiTrendingUp, color: 'purple' },
     { title: 'Total Deposits', value: `₦${Number(d.totalDeposits).toLocaleString()}`, icon: FiArrowUpRight, color: 'green' },
     { title: 'Total Withdrawals', value: `₦${Number(d.totalWithdrawals).toLocaleString()}`, icon: FiRefreshCw, color: 'red' },
     { title: 'Total Investments', value: `₦${Number(d.totalInvestments).toLocaleString()}`, icon: FiBriefcase, color: 'yellow' },

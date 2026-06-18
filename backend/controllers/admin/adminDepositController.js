@@ -92,7 +92,7 @@ exports.approveDeposit = async (req, res) => {
           const bonusAmount = bonusType === 'percentage'
             ? Math.round(deposit.amount * (bonusValue / 100))
             : Math.round(bonusValue);
-          referrer.walletBalance += bonusAmount;
+          referrer.referralBalance += bonusAmount;
           referrer.referralEarnings += bonusAmount;
           await referrer.save();
 
@@ -100,8 +100,8 @@ exports.approveDeposit = async (req, res) => {
             userId: referrer._id,
             type: 'referral_bonus',
             amount: bonusAmount,
-            balanceBefore: referrer.walletBalance - bonusAmount,
-            balanceAfter: referrer.walletBalance,
+            balanceBefore: referrer.referralBalance - bonusAmount,
+            balanceAfter: referrer.referralBalance,
             description: `Referral bonus for ${user.username}'s deposit of ₦${deposit.amount.toLocaleString()}`,
             reference: generateReference(),
             status: 'completed',

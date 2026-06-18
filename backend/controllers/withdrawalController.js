@@ -44,6 +44,10 @@ const createWithdrawal = async (req, res) => {
           message: 'Daily Task withdrawals are only available on Monday and Friday',
         });
       }
+
+      if (user.walletBalance < parsedAmount) {
+        return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
+      }
     } else {
       const minWithdrawal = 2000;
       if (parsedAmount < minWithdrawal) {
@@ -61,23 +65,12 @@ const createWithdrawal = async (req, res) => {
         });
       }
 
-      const totalReferralWithdrawn = await Withdrawal.aggregate([
-        { $match: { userId: user._id, withdrawalType: 'referral_bonus', status: { $in: ['pending', 'approved', 'completed'] } } },
-        { $group: { _id: null, total: { $sum: '$amount' } } },
-      ]);
-      const usedReferral = totalReferralWithdrawn.length > 0 ? totalReferralWithdrawn[0].total : 0;
-      const availableReferral = (user.referralEarnings || 0) - usedReferral;
-
-      if (parsedAmount > availableReferral) {
+      if (user.referralBalance < parsedAmount) {
         return res.status(400).json({
           success: false,
-          message: `Insufficient referral bonus balance. Available: ₦${availableReferral.toLocaleString()}`,
+          message: `Insufficient referral bonus balance. Available: ₦${(user.referralBalance || 0).toLocaleString()}`,
         });
       }
-    }
-
-    if (user.walletBalance < parsedAmount) {
-      return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
     }
 
     const withdrawal = await Withdrawal.create({

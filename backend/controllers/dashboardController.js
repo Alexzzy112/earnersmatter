@@ -5,7 +5,7 @@ const Transaction = require('../models/Transaction');
 const getDashboard = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select(
-      'walletBalance totalDeposits totalWithdrawals totalInvestments totalEarnings'
+      'walletBalance referralBalance totalDeposits totalWithdrawals totalInvestments totalEarnings'
     );
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -29,6 +29,7 @@ const getDashboard = async (req, res) => {
       success: true,
       data: {
         walletBalance: user.walletBalance,
+        referralBalance: user.referralBalance,
         totalDeposits: user.totalDeposits,
         totalWithdrawals: user.totalWithdrawals,
         totalInvestments: user.totalInvestments,

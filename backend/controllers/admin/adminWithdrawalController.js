@@ -56,8 +56,11 @@ exports.approveWithdrawal = async (req, res) => {
     }
 
     const user = await User.findById(withdrawal.userId);
-    if (user.walletBalance < withdrawal.amount) {
-      return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
+    const isReferral = withdrawal.withdrawalType === 'referral_bonus';
+    const balanceField = isReferral ? 'referralBalance' : 'walletBalance';
+
+    if (user[balanceField] < withdrawal.amount) {
+      return res.status(400).json({ success: false, message: `Insufficient ${isReferral ? 'referral' : 'wallet'} balance` });
     }
 
     withdrawal.status = 'approved';
@@ -65,7 +68,7 @@ exports.approveWithdrawal = async (req, res) => {
     withdrawal.reviewedAt = new Date();
     await withdrawal.save();
 
-    user.walletBalance -= withdrawal.amount;
+    user[balanceField] -= withdrawal.amount;
     await user.save();
 
     await logAction({
@@ -168,11 +171,13 @@ exports.revertWithdrawal = async (req, res) => {
 
     const previousStatus = withdrawal.status;
     const user = await User.findById(withdrawal.userId);
+    const isReferral = withdrawal.withdrawalType === 'referral_bonus';
+    const balanceField = isReferral ? 'referralBalance' : 'walletBalance';
 
     if (withdrawal.status === 'approved') {
-      user.walletBalance += withdrawal.amount;
+      user[balanceField] += withdrawal.amount;
     } else if (withdrawal.status === 'completed') {
-      user.walletBalance += withdrawal.amount;
+      user[balanceField] += withdrawal.amount;
       user.totalWithdrawals = Math.max(0, user.totalWithdrawals - withdrawal.amount);
     }
 
@@ -223,10 +228,12 @@ exports.revertAllWithdrawals = async (req, res) => {
           await withdrawal.save();
         } else {
           const user = await User.findById(withdrawal.userId);
+          const isReferral = withdrawal.withdrawalType === 'referral_bonus';
+          const balanceField = isReferral ? 'referralBalance' : 'walletBalance';
           if (status === 'approved') {
-            user.walletBalance += withdrawal.amount;
+            user[balanceField] += withdrawal.amount;
           } else if (status === 'completed') {
-            user.walletBalance += withdrawal.amount;
+            user[balanceField] += withdrawal.amount;
             user.totalWithdrawals = Math.max(0, user.totalWithdrawals - withdrawal.amount);
           }
           await user.save();

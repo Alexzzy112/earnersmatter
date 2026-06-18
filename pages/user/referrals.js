@@ -4,7 +4,7 @@ import { referralAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import StatsCard from '@/components/shared/StatsCard';
-import { FiUsers, FiLink, FiCopy, FiRefreshCw, FiInfo } from 'react-icons/fi';
+import { FiUsers, FiLink, FiCopy, FiRefreshCw, FiInfo, FiDollarSign } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const statusBadge = (status) => {
@@ -90,6 +90,12 @@ export default function ReferralsPage() {
             title="Total Earnings"
             value={`₦${Number(stats.totalEarnings || 0).toLocaleString()}`}
             color="green"
+          />
+          <StatsCard
+            icon={FiDollarSign}
+            title="Available Balance"
+            value={`₦${Number(stats.referralBalance || 0).toLocaleString()}`}
+            color="purple"
           />
         </div>
 

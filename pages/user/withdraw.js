@@ -45,6 +45,8 @@ export default function WithdrawPage() {
   const [chargeRate, setChargeRate] = useState(0.05);
 
   const [withdrawalType, setWithdrawalType] = useState('daily_task');
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [referralBalance, setReferralBalance] = useState(0);
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
@@ -73,6 +75,8 @@ export default function WithdrawPage() {
         ]);
         setWithdrawals(wdRes.data.withdrawals || wdRes.data);
         const u = userRes.data || userRes.user || userRes;
+        setWalletBalance(u.walletBalance || 0);
+        setReferralBalance(u.referralBalance || 0);
         if (u.bankName || u.accountNumber || u.accountName) {
           setBankName(u.bankName || '');
           setAccountNumber(u.accountNumber || '');
@@ -291,6 +295,16 @@ export default function WithdrawPage() {
               >
                 Referral Bonus
               </button>
+            </div>
+
+            {/* Balance Display */}
+            <div className="mb-4 p-3 bg-dark-50 dark:bg-dark-800 rounded-lg flex items-center justify-between">
+              <span className="text-sm font-medium text-dark-600 dark:text-dark-300">
+                Available {isDailyTask ? 'Wallet' : 'Referral'} Balance
+              </span>
+              <span className="text-lg font-bold text-dark-900 dark:text-white">
+                ₦{Number(isDailyTask ? walletBalance : referralBalance).toLocaleString()}
+              </span>
             </div>
 
             {/* Write-up for current withdrawal type */}

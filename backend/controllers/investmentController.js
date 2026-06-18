@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const Referral = require('../models/Referral');
 const Setting = require('../models/Setting');
+const EarningSchedule = require('../models/EarningSchedule');
 const helpers = require('../utils/helpers');
 const { logAction } = require('../utils/auditLogger');
 
@@ -101,7 +102,7 @@ const purchaseProduct = async (req, res) => {
             ? Math.round(totalCost * (bonusValue / 100))
             : Math.round(bonusValue);
           if (bonusAmount > 0) {
-            referrer.walletBalance += bonusAmount;
+            referrer.referralBalance += bonusAmount;
             referrer.referralEarnings += bonusAmount;
             await referrer.save();
 
@@ -109,8 +110,8 @@ const purchaseProduct = async (req, res) => {
               userId: referrer._id,
               type: 'referral_bonus',
               amount: bonusAmount,
-              balanceBefore: referrer.walletBalance - bonusAmount,
-              balanceAfter: referrer.walletBalance,
+              balanceBefore: referrer.referralBalance - bonusAmount,
+              balanceAfter: referrer.referralBalance,
               description: `Referral bonus for ${user.username}'s purchase of ${product.name}`,
               reference: helpers.generateReference(),
               status: 'completed',
@@ -162,7 +163,12 @@ const getInvestmentById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Investment not found' });
     }
 
-    res.status(200).json({ success: true, data: investment });
+    const earningsSchedule = await EarningSchedule.find({ investmentId: investment._id }).sort({ dayNumber: 1 });
+
+    const data = investment.toObject();
+    data.earningsSchedule = earningsSchedule;
+
+    res.status(200).json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
