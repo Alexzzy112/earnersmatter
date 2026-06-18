@@ -103,6 +103,20 @@ export default function AdminWithdrawals() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    setSaving(true);
+    try {
+      const res = await adminAPI.deleteAllWithdrawals(statusFilter);
+      toast.success(res.message || `${res.count || 0} withdrawal(s) deleted`);
+      setConfirmAction(null);
+      fetchWithdrawals();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete withdrawals');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -137,6 +151,11 @@ export default function AdminWithdrawals() {
               <FiRotateCcw className="w-4 h-4" /> Revert All {statusFilter}
             </button>
           )}
+          <button onClick={() => setConfirmAction({ action: 'deleteAll' })}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50">
+            <FiTrash2 className="w-4 h-4" /> Delete All{statusFilter !== 'all' ? ` ${statusFilter}` : ''}
+          </button>
         </div>
 
         <div className="bg-white dark:bg-dark-800 rounded-xl border border-gray-200 dark:border-dark-700 overflow-hidden">
@@ -245,20 +264,25 @@ export default function AdminWithdrawals() {
               confirmAction?.action === 'approve' ? 'bg-green-100 text-green-600'
                 : confirmAction?.action === 'revertAll' ? 'bg-amber-100 text-amber-600'
                 : confirmAction?.action === 'revert' ? 'bg-amber-100 text-amber-600'
+                : confirmAction?.action === 'deleteAll' ? 'bg-red-100 text-red-600'
                 : 'bg-blue-100 text-blue-600'
             }`}>
               {confirmAction?.action === 'approve' ? <FiCheck className="w-6 h-6" />
                 : confirmAction?.action === 'revert' || confirmAction?.action === 'revertAll' ? <FiRotateCcw className="w-6 h-6" />
+                : confirmAction?.action === 'deleteAll' ? <FiTrash2 className="w-6 h-6" />
                 : <FiSend className="w-6 h-6" />}
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 capitalize">
-              {confirmAction?.action === 'revertAll' ? 'Revert All Withdrawals' : `${confirmAction?.action} Withdrawal`}
+              {confirmAction?.action === 'revertAll' ? 'Revert All Withdrawals'
+                : confirmAction?.action === 'deleteAll' ? 'Delete All Withdrawals'
+                : `${confirmAction?.action} Withdrawal`}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {confirmAction?.action === 'approve' && 'Are you sure you want to approve this withdrawal? The amount will be deducted from the user\'s wallet.'}
               {confirmAction?.action === 'complete' && 'Mark this withdrawal as completed after payment has been processed?'}
               {confirmAction?.action === 'revert' && 'Revert this withdrawal to pending? The amount will be restored to the user\'s wallet.'}
               {confirmAction?.action === 'revertAll' && `Revert all ${statusFilter} withdrawals to pending? This will restore wallet balances.`}
+              {confirmAction?.action === 'deleteAll' && `Permanently delete all ${statusFilter === 'all' ? '' : statusFilter + ' '}withdrawal records? This action cannot be undone.`}
             </p>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-dark-700">
@@ -266,14 +290,19 @@ export default function AdminWithdrawals() {
             <button onClick={() => {
               if (confirmAction.action === 'revert') handleRevert(confirmAction.id);
               else if (confirmAction.action === 'revertAll') handleRevertAll();
+              else if (confirmAction.action === 'deleteAll') handleDeleteAll();
               else handleAction(confirmAction.id, confirmAction.action);
             }} disabled={saving}
               className={`px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50 ${
                 confirmAction?.action === 'revert' || confirmAction?.action === 'revertAll'
                   ? 'bg-amber-600 hover:bg-amber-700'
+                  : confirmAction?.action === 'deleteAll'
+                  ? 'bg-red-600 hover:bg-red-700'
                   : 'bg-primary-600 hover:bg-primary-700'
               }`}>
-              {saving ? 'Processing...' : `Yes, ${confirmAction?.action === 'revertAll' ? 'Revert All' : confirmAction?.action}`}
+              {saving ? 'Processing...' : confirmAction?.action === 'deleteAll' ? 'Yes, Delete All'
+                : confirmAction?.action === 'revertAll' ? 'Yes, Revert All'
+                : `Yes, ${confirmAction?.action}`}
             </button>
           </div>
         </Modal>

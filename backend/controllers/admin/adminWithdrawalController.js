@@ -104,6 +104,32 @@ exports.deleteWithdrawal = async (req, res) => {
   }
 };
 
+exports.deleteAllWithdrawals = async (req, res) => {
+  try {
+    const { status } = req.body;
+    let filter = {};
+    if (status && status !== 'all') filter.status = status;
+
+    const result = await Withdrawal.deleteMany(filter);
+
+    await logAction({
+      userId: req.user._id,
+      action: 'withdrawals_deleted_all',
+      entityType: 'Withdrawal',
+      details: { status: status || 'all', count: result.deletedCount },
+      req,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `${result.deletedCount} withdrawal(s) deleted`,
+      count: result.deletedCount,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.rejectWithdrawal = async (req, res) => {
   try {
     const { adminNote } = req.body;

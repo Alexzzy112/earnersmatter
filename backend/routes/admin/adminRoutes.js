@@ -49,6 +49,7 @@ router.put('/withdrawals/:id/complete', adminWithdrawalController.completeWithdr
 router.put('/withdrawals/:id/revert', adminWithdrawalController.revertWithdrawal);
 router.post('/withdrawals/revert-all', adminWithdrawalController.revertAllWithdrawals);
 router.delete('/withdrawals/:id', adminWithdrawalController.deleteWithdrawal);
+router.post('/withdrawals/delete-all', adminWithdrawalController.deleteAllWithdrawals);
 
 // Products
 router.get('/products', adminProductController.getAllProducts);
