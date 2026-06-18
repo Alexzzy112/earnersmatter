@@ -324,7 +324,7 @@ export default function WithdrawPage() {
             <div className="flex gap-2 mb-4">
               <button
                 type="button"
-                onClick={() => { setWithdrawalType('daily_task'); setValidation({}); }}
+                onClick={() => { setWithdrawalType('daily_task'); setErrorModal(null); }}
                 className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-colors ${
                   withdrawalType === 'daily_task'
                     ? 'bg-primary-600 text-white'
@@ -335,7 +335,7 @@ export default function WithdrawPage() {
               </button>
               <button
                 type="button"
-                onClick={() => { setWithdrawalType('referral_bonus'); setValidation({}); }}
+                onClick={() => { setWithdrawalType('referral_bonus'); setErrorModal(null); }}
                 className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-colors ${
                   withdrawalType === 'referral_bonus'
                     ? 'bg-primary-600 text-white'
