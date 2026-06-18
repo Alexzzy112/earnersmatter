@@ -155,6 +155,114 @@ exports.rejectWithdrawal = async (req, res) => {
   }
 };
 
+exports.revertWithdrawal = async (req, res) => {
+  try {
+    const withdrawal = await Withdrawal.findById(req.params.id);
+    if (!withdrawal) {
+      return res.status(404).json({ success: false, message: 'Withdrawal not found' });
+    }
+
+    if (withdrawal.status === 'pending') {
+      return res.status(400).json({ success: false, message: 'Pending withdrawal cannot be reverted' });
+    }
+
+    const previousStatus = withdrawal.status;
+    const user = await User.findById(withdrawal.userId);
+
+    if (withdrawal.status === 'approved') {
+      user.walletBalance += withdrawal.amount;
+    } else if (withdrawal.status === 'completed') {
+      user.walletBalance += withdrawal.amount;
+      user.totalWithdrawals = Math.max(0, user.totalWithdrawals - withdrawal.amount);
+    }
+
+    await user.save();
+
+    withdrawal.status = 'pending';
+    withdrawal.reviewedBy = undefined;
+    withdrawal.reviewedAt = undefined;
+    withdrawal.completedAt = undefined;
+    await withdrawal.save();
+
+    await logAction({
+      userId: req.user._id,
+      action: 'withdrawal_reverted',
+      entityType: 'Withdrawal',
+      entityId: withdrawal._id,
+      details: { amount: withdrawal.amount, previousStatus },
+      req,
+    });
+
+    await Notification.create({
+      userId: withdrawal.userId,
+      type: 'withdrawal',
+      title: 'Withdrawal Reverted',
+      message: `Your withdrawal of ₦${withdrawal.amount.toLocaleString()} has been reverted to pending`,
+    });
+
+    res.status(200).json({ success: true, data: withdrawal });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.revertAllWithdrawals = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status || !['approved', 'completed', 'rejected'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status. Use: approved, completed, or rejected' });
+    }
+
+    const withdrawals = await Withdrawal.find({ status }).populate('userId');
+
+    let reverted = 0;
+    for (const withdrawal of withdrawals) {
+      try {
+        if (status === 'rejected') {
+          withdrawal.status = 'pending';
+          await withdrawal.save();
+        } else {
+          const user = await User.findById(withdrawal.userId);
+          if (status === 'approved') {
+            user.walletBalance += withdrawal.amount;
+          } else if (status === 'completed') {
+            user.walletBalance += withdrawal.amount;
+            user.totalWithdrawals = Math.max(0, user.totalWithdrawals - withdrawal.amount);
+          }
+          await user.save();
+
+          withdrawal.status = 'pending';
+          withdrawal.reviewedBy = undefined;
+          withdrawal.reviewedAt = undefined;
+          withdrawal.completedAt = undefined;
+          await withdrawal.save();
+        }
+
+        await logAction({
+          userId: req.user._id,
+          action: 'withdrawal_reverted',
+          entityType: 'Withdrawal',
+          entityId: withdrawal._id,
+          details: { amount: withdrawal.amount, previousStatus: status, bulk: true },
+          req,
+        });
+
+        reverted++;
+      } catch (innerError) {
+        console.error(`Error reverting withdrawal ${withdrawal._id}:`, innerError.message);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `${reverted} withdrawal(s) reverted to pending`,
+      count: reverted,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.completeWithdrawal = async (req, res) => {
   try {
     const withdrawal = await Withdrawal.findById(req.params.id);

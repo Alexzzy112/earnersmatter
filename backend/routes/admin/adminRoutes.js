@@ -46,6 +46,8 @@ router.get('/withdrawals/:id', adminWithdrawalController.getWithdrawalById);
 router.put('/withdrawals/:id/approve', adminWithdrawalController.approveWithdrawal);
 router.put('/withdrawals/:id/reject', adminWithdrawalController.rejectWithdrawal);
 router.put('/withdrawals/:id/complete', adminWithdrawalController.completeWithdrawal);
+router.put('/withdrawals/:id/revert', adminWithdrawalController.revertWithdrawal);
+router.post('/withdrawals/revert-all', adminWithdrawalController.revertAllWithdrawals);
 router.delete('/withdrawals/:id', adminWithdrawalController.deleteWithdrawal);
 
 // Products

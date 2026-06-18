@@ -8,7 +8,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import StatusBadge from '@/components/shared/StatusBadge';
 import toast from 'react-hot-toast';
 import {
-  FiArrowUpRight, FiCheck, FiX, FiSearch, FiChevronLeft, FiChevronRight, FiSend, FiTrash2
+  FiArrowUpRight, FiCheck, FiX, FiSearch, FiChevronLeft, FiChevronRight, FiSend, FiTrash2, FiRotateCcw
 } from 'react-icons/fi';
 
 const statusFilters = ['all', 'pending', 'approved', 'rejected', 'completed'];
@@ -76,6 +76,33 @@ export default function AdminWithdrawals() {
     }
   };
 
+  const handleRevert = async (id) => {
+    setSaving(true);
+    try {
+      await adminAPI.revertWithdrawal(id);
+      toast.success('Withdrawal reverted to pending');
+      setConfirmAction(null);
+      fetchWithdrawals();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to revert withdrawal');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRevertAll = async () => {
+    setSaving(true);
+    try {
+      const res = await adminAPI.revertAllWithdrawals(statusFilter);
+      toast.success(res.message || `${res.count || 0} withdrawal(s) reverted`);
+      fetchWithdrawals();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to revert withdrawals');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -103,6 +130,13 @@ export default function AdminWithdrawals() {
               </button>
             ))}
           </div>
+          {statusFilter !== 'all' && statusFilter !== 'pending' && (
+            <button onClick={() => setConfirmAction({ action: 'revertAll' })}
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 disabled:opacity-50">
+              <FiRotateCcw className="w-4 h-4" /> Revert All {statusFilter}
+            </button>
+          )}
         </div>
 
         <div className="bg-white dark:bg-dark-800 rounded-xl border border-gray-200 dark:border-dark-700 overflow-hidden">
@@ -150,12 +184,21 @@ export default function AdminWithdrawals() {
                             </>
                           )}
                           {wd.status === 'approved' && (
-                            <button onClick={() => setConfirmAction({ id: wd._id, action: 'complete' })} className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Complete">
-                              <FiSend className="w-4 h-4" />
-                            </button>
+                            <>
+                              <button onClick={() => setConfirmAction({ id: wd._id, action: 'complete' })} className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Complete">
+                                <FiSend className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setConfirmAction({ id: wd._id, action: 'revert' })} className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="Revert to pending">
+                                <FiRotateCcw className="w-4 h-4" />
+                              </button>
+                            </>
                           )}
                           {['completed', 'rejected'].includes(wd.status) && (
-                            <span className="text-xs text-gray-400">{wd.processedAt ? new Date(wd.processedAt).toLocaleDateString() : 'Done'}</span>
+                            <>
+                              <button onClick={() => setConfirmAction({ id: wd._id, action: 'revert' })} className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="Revert to pending">
+                                <FiRotateCcw className="w-4 h-4" />
+                              </button>
+                            </>
                           )}
                           <button onClick={() => setDeleteTarget(wd)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete">
                             <FiTrash2 className="w-4 h-4" />
@@ -185,24 +228,42 @@ export default function AdminWithdrawals() {
           )}
         </div>
 
-        {/* Approve/Complete Confirmation */}
+        {/* Confirmation Modal */}
         <Modal isOpen={!!confirmAction} onClose={() => setConfirmAction(null)} title="" size="sm">
           <div className="text-center">
             <div className={`w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center ${
-              confirmAction?.action === 'approve' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+              confirmAction?.action === 'approve' ? 'bg-green-100 text-green-600'
+                : confirmAction?.action === 'revertAll' ? 'bg-amber-100 text-amber-600'
+                : confirmAction?.action === 'revert' ? 'bg-amber-100 text-amber-600'
+                : 'bg-blue-100 text-blue-600'
             }`}>
-              {confirmAction?.action === 'approve' ? <FiCheck className="w-6 h-6" /> : <FiSend className="w-6 h-6" />}
+              {confirmAction?.action === 'approve' ? <FiCheck className="w-6 h-6" />
+                : confirmAction?.action === 'revert' || confirmAction?.action === 'revertAll' ? <FiRotateCcw className="w-6 h-6" />
+                : <FiSend className="w-6 h-6" />}
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 capitalize">{confirmAction?.action} Withdrawal</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 capitalize">
+              {confirmAction?.action === 'revertAll' ? 'Revert All Withdrawals' : `${confirmAction?.action} Withdrawal`}
+            </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {confirmAction?.action === 'approve' ? 'Are you sure you want to approve this withdrawal?' : 'Mark this withdrawal as completed?'}
+              {confirmAction?.action === 'approve' && 'Are you sure you want to approve this withdrawal? The amount will be deducted from the user\'s wallet.'}
+              {confirmAction?.action === 'complete' && 'Mark this withdrawal as completed after payment has been processed?'}
+              {confirmAction?.action === 'revert' && 'Revert this withdrawal to pending? The amount will be restored to the user\'s wallet.'}
+              {confirmAction?.action === 'revertAll' && `Revert all ${statusFilter} withdrawals to pending? This will restore wallet balances.`}
             </p>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-dark-700">
             <button onClick={() => setConfirmAction(null)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700">Cancel</button>
-            <button onClick={() => handleAction(confirmAction.id, confirmAction.action)} disabled={saving}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50">
-              {saving ? 'Processing...' : `Yes, ${confirmAction?.action}`}
+            <button onClick={() => {
+              if (confirmAction.action === 'revert') handleRevert(confirmAction.id);
+              else if (confirmAction.action === 'revertAll') handleRevertAll();
+              else handleAction(confirmAction.id, confirmAction.action);
+            }} disabled={saving}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50 ${
+                confirmAction?.action === 'revert' || confirmAction?.action === 'revertAll'
+                  ? 'bg-amber-600 hover:bg-amber-700'
+                  : 'bg-primary-600 hover:bg-primary-700'
+              }`}>
+              {saving ? 'Processing...' : `Yes, ${confirmAction?.action === 'revertAll' ? 'Revert All' : confirmAction?.action}`}
             </button>
           </div>
         </Modal>
