@@ -55,21 +55,10 @@ exports.approveWithdrawal = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Withdrawal is not pending' });
     }
 
-    const user = await User.findById(withdrawal.userId);
-    const isReferral = withdrawal.withdrawalType === 'referral_bonus';
-    const balanceField = isReferral ? 'referralBalance' : 'walletBalance';
-
-    if (user[balanceField] < withdrawal.amount) {
-      return res.status(400).json({ success: false, message: `Insufficient ${isReferral ? 'referral' : 'wallet'} balance` });
-    }
-
     withdrawal.status = 'approved';
     withdrawal.reviewedBy = req.user._id;
     withdrawal.reviewedAt = new Date();
     await withdrawal.save();
-
-    user[balanceField] -= withdrawal.amount;
-    await user.save();
 
     await logAction({
       userId: req.user._id,
@@ -128,11 +117,18 @@ exports.rejectWithdrawal = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Withdrawal is not pending' });
     }
 
+    const user = await User.findById(withdrawal.userId);
+    const isReferral = withdrawal.withdrawalType === 'referral_bonus';
+    const balanceField = isReferral ? 'referralBalance' : 'walletBalance';
+
     withdrawal.status = 'rejected';
     withdrawal.reviewedBy = req.user._id;
     withdrawal.reviewedAt = new Date();
     withdrawal.adminNote = adminNote || '';
     await withdrawal.save();
+
+    user[balanceField] += withdrawal.amount;
+    await user.save();
 
     await logAction({
       userId: req.user._id,

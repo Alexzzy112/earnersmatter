@@ -82,13 +82,20 @@ const createWithdrawal = async (req, res) => {
       accountDetails,
     });
 
+    if (type === 'daily_task') {
+      user.walletBalance -= parsedAmount;
+    } else {
+      user.referralBalance -= parsedAmount;
+    }
+    await user.save();
+
     await Transaction.create({
       userId: req.user._id,
       type: 'withdrawal',
       amount: parsedAmount,
       charge,
-      balanceBefore: user.walletBalance,
-      balanceAfter: user.walletBalance,
+      balanceBefore: type === 'daily_task' ? user.walletBalance + parsedAmount : user.referralBalance + parsedAmount,
+      balanceAfter: type === 'daily_task' ? user.walletBalance : user.referralBalance,
       status: 'pending',
       reference: helpers.generateReference(),
     });
