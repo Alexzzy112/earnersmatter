@@ -123,15 +123,15 @@ export default function WithdrawPage() {
         setErrorModal({
           icon: FiCalendar,
           color: 'amber',
-          title: 'Wrong Day for Withdrawal',
-          message: `Daily Task withdrawals are only available on Monday and Friday. Next available day: ${nextWithdrawalDay()}.`,
+          title: 'Withdrawal Not Available Today',
+          message: `Daily Task withdrawals are restricted to <strong>Mondays</strong> and <strong>Fridays</strong>. Since today is <strong>${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today]}</strong>, you will be able to withdraw on the next available day: <strong>${nextWithdrawalDay()}</strong>. Please check back then.`,
         });
       } else {
         setErrorModal({
-          icon: FiHourglass,
+          icon: FiClock,
           color: 'amber',
-          title: 'Withdrawal Window Closed',
-          message: 'Referral Bonus withdrawals are only available from 7:00 AM to 12:00 PM (noon) daily. Please come back during these hours.',
+          title: 'Withdrawal Window Currently Closed',
+          message: 'Referral Bonus withdrawals can only be processed between <strong>7:00 AM</strong> and <strong>12:00 PM (noon)</strong> daily. The withdrawal window is currently closed. Please try again during operating hours.',
         });
       }
       return false;
@@ -140,8 +140,8 @@ export default function WithdrawPage() {
       setErrorModal({
         icon: FiAlertCircle,
         color: 'red',
-        title: 'Amount Required',
-        message: 'Please enter the amount you wish to withdraw.',
+        title: 'Withdrawal Amount Required',
+        message: 'Please enter the amount you wish to withdraw. This field cannot be left empty.',
       });
       return false;
     }
@@ -149,8 +149,8 @@ export default function WithdrawPage() {
       setErrorModal({
         icon: FiAlertCircle,
         color: 'red',
-        title: 'Invalid Amount',
-        message: 'Please enter a valid withdrawal amount greater than zero.',
+        title: 'Invalid Withdrawal Amount',
+        message: 'The amount you entered is not valid. Please enter a numeric value greater than zero.',
       });
       return false;
     }
@@ -158,18 +158,19 @@ export default function WithdrawPage() {
       setErrorModal({
         icon: FiAlertCircle,
         color: 'red',
-        title: 'Below Minimum Amount',
-        message: `Minimum withdrawal amount is ₦${minWithdrawal.toLocaleString()}. Please increase the amount.`,
+        title: 'Below Minimum Withdrawal Amount',
+        message: `The minimum withdrawal amount for <strong>${isDailyTask ? 'Daily Task Earnings' : 'Referral Bonus'}</strong> is <strong>₦${minWithdrawal.toLocaleString()}</strong>. Please increase your withdrawal amount to at least <strong>₦${minWithdrawal.toLocaleString()}</strong>.`,
       });
       return false;
     }
+    const balanceLabel = isDailyTask ? 'Wallet' : 'Referral';
     const availableBalance = isDailyTask ? walletBalance : referralBalance;
     if (numericAmount > availableBalance) {
       setErrorModal({
         icon: FiXCircle,
         color: 'red',
-        title: 'Insufficient Balance',
-        message: `Your ${isDailyTask ? 'wallet' : 'referral'} balance of ₦${availableBalance.toLocaleString()} is not enough. Please enter a lower amount.`,
+        title: `Insufficient ${balanceLabel} Balance`,
+        message: `Your current <strong>${balanceLabel.toLowerCase()} balance</strong> is <strong>₦${availableBalance.toLocaleString()}</strong>, which is less than the <strong>₦${numericAmount.toLocaleString()}</strong> you requested. Please enter a lower amount or earn more before withdrawing.`,
       });
       return false;
     }
@@ -177,8 +178,8 @@ export default function WithdrawPage() {
       setErrorModal({
         icon: FiAlertCircle,
         color: 'red',
-        title: 'Bank Account Required',
-        message: 'Please save your bank account details first before submitting a withdrawal.',
+        title: 'Bank Account Not Configured',
+        message: 'You need to save your bank account details before you can make a withdrawal. Please fill in your <strong>Bank Name</strong>, <strong>Account Number</strong>, and <strong>Account Name</strong> in the "Withdrawal Account" section above, then click <strong>Save Bank Account</strong>.',
       });
       return false;
     }
@@ -508,7 +509,7 @@ export default function WithdrawPage() {
       </div>
 
       {errorModal && (
-        <Modal isOpen={true} onClose={() => setErrorModal(null)}>
+        <Modal isOpen={true} onClose={() => setErrorModal(null)} title={errorModal.title}>
           <div className="text-center">
             <div className={`mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center ${
               errorModal.color === 'amber'
@@ -521,8 +522,7 @@ export default function WithdrawPage() {
                   : 'text-red-600 dark:text-red-400'
               }`} />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{errorModal.title}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{errorModal.message}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed" dangerouslySetInnerHTML={{ __html: errorModal.message }} />
             <button
               onClick={() => setErrorModal(null)}
               className="mt-6 w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
