@@ -32,7 +32,7 @@ export default function InvestmentsPage() {
     const fetchData = async () => {
       try {
         const res = await investmentAPI.getAll();
-        setInvestments(res.data.investments || res.data);
+        setInvestments(res.data.data);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load investments');
       } finally {
@@ -45,7 +45,7 @@ export default function InvestmentsPage() {
   const viewDetail = async (inv) => {
     try {
       const res = await investmentAPI.getById(inv._id);
-      setSelected(res.data.investment || res.data);
+      setSelected(res.data.data);
     } catch (err) {
       toast.error('Failed to load investment details');
     }

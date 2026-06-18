@@ -109,7 +109,7 @@ export default function AdminTasks() {
             <button onClick={handleGenerate} disabled={generating}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 disabled:opacity-50">
               <FiRefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
-              {generating ? 'Generating...' : 'Generate Daily'}
+              {generating ? 'Resetting...' : 'Reset Today'}
             </button>
             <button onClick={openCreate} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700">
               <FiPlus className="w-4 h-4" /> Create Task
