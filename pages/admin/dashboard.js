@@ -216,10 +216,10 @@ export default function AdminDashboard() {
                   <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-800">
                     <div className="flex items-center justify-between text-xs mb-1">
                       <span className="text-gray-500 dark:text-gray-400">Auto-rotate Progress</span>
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">{data.activePaymentAccount.assignmentCount || 0}/5</span>
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">{data.activePaymentAccount.assignmentCount || 0}/3</span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                      <div className="bg-green-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((data.activePaymentAccount.assignmentCount || 0) / 5) * 100, 100)}%` }} />
+                      <div className="bg-green-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((data.activePaymentAccount.assignmentCount || 0) / 3) * 100, 100)}%` }} />
                     </div>
                   </div>
                   <Link href="/admin/payment-accounts"

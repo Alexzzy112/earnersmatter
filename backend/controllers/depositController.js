@@ -36,11 +36,10 @@ const createDeposit = async (req, res) => {
       reference,
     });
 
-    // Increment assignment count and auto-rotate after 5
     paymentAccount.assignmentCount = (paymentAccount.assignmentCount || 0) + 1;
     await paymentAccount.save();
 
-    if (paymentAccount.assignmentCount >= 5) {
+    if (paymentAccount.assignmentCount >= 3) {
       paymentAccount.isActive = false;
       await paymentAccount.save();
 

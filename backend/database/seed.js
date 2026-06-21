@@ -71,6 +71,7 @@ const seed = async () => {
       { bankName: 'GTBank', accountNumber: '0123456789', accountName: 'EarnersMatter Ltd', isActive: true },
       { bankName: 'Access Bank', accountNumber: '9876543210', accountName: 'EarnersMatter Ltd', isActive: false },
       { bankName: 'Zenith Bank', accountNumber: '5555555555', accountName: 'EarnersMatter Ltd', isActive: false },
+      { bankName: 'First Bank', accountNumber: '1112223334', accountName: 'EarnersMatter Ltd', isActive: false },
     ];
     await PaymentAccount.insertMany(paymentAccounts);
     console.log('Payment accounts created successfully.');

@@ -77,7 +77,7 @@ export default function AdminPaymentAccounts() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Payment Accounts</h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage payment accounts for deposits</p>
           </div>
-          {accounts.length < 3 && (
+          {accounts.length < 4 && (
             <button onClick={openCreate} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700">
               <FiPlus className="w-4 h-4" /> Add Account
             </button>
@@ -86,7 +86,7 @@ export default function AdminPaymentAccounts() {
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
+            {[...Array(4)].map((_, i) => (
               <div key={i} className="bg-white dark:bg-dark-800 rounded-xl border border-gray-200 dark:border-dark-700 p-5 animate-pulse">
                 <div className="h-4 w-2/3 bg-gray-200 dark:bg-dark-700 rounded mb-3" />
                 <div className="h-3 w-full bg-gray-200 dark:bg-dark-700 rounded mb-2" />
@@ -152,10 +152,10 @@ export default function AdminPaymentAccounts() {
                     <div className="pt-1">
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-gray-400">Auto-rotate</span>
-                        <span className="font-medium text-gray-600 dark:text-gray-300">{account.assignmentCount || 0}/5</span>
+                        <span className="font-medium text-gray-600 dark:text-gray-300">{account.assignmentCount || 0}/3</span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-1.5">
-                        <div className="bg-primary-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((account.assignmentCount || 0) / 5) * 100, 100)}%` }} />
+                        <div className="bg-primary-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((account.assignmentCount || 0) / 3) * 100, 100)}%` }} />
                       </div>
                     </div>
                   )}
