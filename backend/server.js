@@ -30,7 +30,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", 'data:', 'https:'],
+      imgSrc: ["'self'", 'data:', 'https:', 'https://res.cloudinary.com'],
       fontSrc: ["'self'", 'data:'],
       connectSrc: ["'self'", 'https:'],
       baseUri: ["'self'"],

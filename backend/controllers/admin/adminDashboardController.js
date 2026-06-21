@@ -4,6 +4,7 @@ const Withdrawal = require('../../models/Withdrawal');
 const Investment = require('../../models/Investment');
 const Transaction = require('../../models/Transaction');
 const AuditLog = require('../../models/AuditLog');
+const PaymentAccount = require('../../models/PaymentAccount');
 
 exports.getDashboardStats = async (req, res) => {
   try {
@@ -16,6 +17,8 @@ exports.getDashboardStats = async (req, res) => {
       totalEarningsDistributed,
       pendingDeposits,
       pendingWithdrawals,
+      activePaymentAccount,
+      totalPaymentAccounts,
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ status: 'active' }),
@@ -36,6 +39,8 @@ exports.getDashboardStats = async (req, res) => {
       ]),
       Deposit.countDocuments({ status: 'pending' }),
       Withdrawal.countDocuments({ status: 'pending' }),
+      PaymentAccount.findOne({ isActive: true }),
+      PaymentAccount.countDocuments(),
     ]);
 
     const depositSum = totalDeposits.length > 0 ? totalDeposits[0].total : 0;
@@ -56,6 +61,15 @@ exports.getDashboardStats = async (req, res) => {
         totalRevenue,
         pendingDeposits,
         pendingWithdrawals,
+        activePaymentAccount: activePaymentAccount ? {
+          _id: activePaymentAccount._id,
+          accountName: activePaymentAccount.accountName,
+          accountNumber: activePaymentAccount.accountNumber,
+          bankName: activePaymentAccount.bankName,
+          accountType: activePaymentAccount.accountType,
+          assignmentCount: activePaymentAccount.assignmentCount,
+        } : null,
+        totalPaymentAccounts,
       },
     });
   } catch (error) {

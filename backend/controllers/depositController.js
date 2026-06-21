@@ -89,7 +89,8 @@ const uploadProof = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Payment proof file is required' });
     }
 
-    deposit.paymentProof = req.file.filename;
+    const upload = require('../middleware/upload');
+    deposit.paymentProof = upload.useCloudinary ? req.file.path : req.file.filename;
     await deposit.save();
 
     await logAction({

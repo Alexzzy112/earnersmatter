@@ -8,7 +8,8 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
   FiUsers, FiUserCheck, FiDollarSign, FiArrowUpRight, FiTrendingUp,
-  FiBarChart2, FiPieChart, FiClock, FiRefreshCw, FiActivity, FiChevronRight, FiAlertTriangle, FiDatabase
+  FiBarChart2, FiPieChart, FiClock, FiRefreshCw, FiActivity, FiChevronRight, FiAlertTriangle, FiDatabase,
+  FiCreditCard, FiHash, FiHome, FiType, FiExternalLink
 } from 'react-icons/fi';
 
 export default function AdminDashboard() {
@@ -178,6 +179,56 @@ export default function AdminDashboard() {
                 );
               })}
             </div>
+            {data?.activePaymentAccount && (
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-dark-700">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3 flex items-center gap-1.5">
+                  <FiCreditCard className="w-3.5 h-3.5" /> Active Payment Account
+                </h3>
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                      <FiCreditCard className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900 dark:text-white">{data.activePaymentAccount.accountName}</p>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        Accepting Payments
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-1.5">
+                      <FiHash className="w-3 h-3 text-gray-400" />
+                      <span className="font-mono font-medium">{data.activePaymentAccount.accountNumber}</span>
+                    </div>
+                    {data.activePaymentAccount.bankName && (
+                      <div className="flex items-center gap-1.5">
+                        <FiHome className="w-3 h-3 text-gray-400" />
+                        <span>{data.activePaymentAccount.bankName}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <FiType className="w-3 h-3 text-gray-400" />
+                      <span className="capitalize">{(data.activePaymentAccount.accountType || 'bank').replace('_', ' ')}</span>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-800">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-gray-500 dark:text-gray-400">Auto-rotate Progress</span>
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">{data.activePaymentAccount.assignmentCount || 0}/5</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                      <div className="bg-green-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((data.activePaymentAccount.assignmentCount || 0) / 5) * 100, 100)}%` }} />
+                    </div>
+                  </div>
+                  <Link href="/admin/payment-accounts"
+                    className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors">
+                    <FiExternalLink className="w-3 h-3" /> Manage Payment Accounts
+                  </Link>
+                </div>
+              </div>
+            )}
             {data && (
               <div className="mt-6 pt-4 border-t border-gray-200 dark:border-dark-700">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">System Status</h3>

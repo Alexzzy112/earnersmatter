@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { depositAPI, paymentAccountAPI, productAPI, uploadsBase } from '@/lib/api';
+import { depositAPI, paymentAccountAPI, productAPI, getProofUrl } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { FiDollarSign, FiUpload, FiRefreshCw, FiPackage, FiX, FiCheckCircle } from 'react-icons/fi';
@@ -200,7 +200,7 @@ export default function WalletPage() {
                         <td className="font-medium">₦{Number(dep.amount).toLocaleString()}</td>
                         <td>
                           {dep.paymentProof ? (
-                            <a href={`${uploadsBase}/${dep.paymentProof}`} target="_blank" rel="noopener noreferrer"
+                            <a href={getProofUrl(dep.paymentProof)} target="_blank" rel="noopener noreferrer"
                               className="text-primary-500 hover:text-primary-600 text-xs font-medium">View</a>
                           ) : '-'}
                         </td>
