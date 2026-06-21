@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { auth } = require('../middleware/auth');
 const { adminMiddleware } = require('../middleware/admin');
+const { maintenanceMode } = require('../middleware/maintenance');
 
 const authRoutes = require('./authRoutes');
 const walletRoutes = require('./walletRoutes');
@@ -20,18 +21,18 @@ const leaderboardRoutes = require('./leaderboardRoutes');
 const adminRoutes = require('./admin/adminRoutes');
 
 router.use('/auth', authRoutes);
-router.use('/wallet', walletRoutes);
-router.use('/deposits', depositRoutes);
-router.use('/withdrawals', withdrawalRoutes);
+router.use('/wallet', maintenanceMode, walletRoutes);
+router.use('/deposits', maintenanceMode, depositRoutes);
+router.use('/withdrawals', maintenanceMode, withdrawalRoutes);
 router.use('/products', productRoutes);
-router.use('/investments', investmentRoutes);
-router.use('/earnings', earningRoutes);
-router.use('/referrals', referralRoutes);
+router.use('/investments', maintenanceMode, investmentRoutes);
+router.use('/earnings', maintenanceMode, earningRoutes);
+router.use('/referrals', maintenanceMode, referralRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/payment-account', paymentAccountRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/settings', settingsRoutes);
-router.use('/tasks', taskRoutes);
+router.use('/tasks', maintenanceMode, taskRoutes);
 router.use('/leaderboard', leaderboardRoutes);
 router.use('/admin', auth, adminMiddleware, adminRoutes);
 
