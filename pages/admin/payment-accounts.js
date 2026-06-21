@@ -8,10 +8,10 @@ import EmptyState from '@/components/shared/EmptyState';
 import StatusBadge from '@/components/shared/StatusBadge';
 import toast from 'react-hot-toast';
 import {
-  FiCreditCard, FiPlus, FiEdit2, FiPower, FiAlertTriangle, FiClock, FiHash, FiHome, FiType
+  FiCreditCard, FiPlus, FiEdit2, FiPower, FiAlertTriangle, FiClock, FiHash, FiHome, FiType, FiStar
 } from 'react-icons/fi';
 
-const emptyAccount = { accountName: '', accountNumber: '', bankName: '', accountType: 'bank', isActive: false };
+const emptyAccount = { accountName: '', accountNumber: '', bankName: '', accountType: 'bank', isActive: false, isDefault: false };
 
 export default function AdminPaymentAccounts() {
   const [accounts, setAccounts] = useState([]);
@@ -66,8 +66,16 @@ export default function AdminPaymentAccounts() {
     finally { setSaving(false); }
   };
 
+  const handleSetDefault = async (id) => {
+    setSaving(true);
+    try { await adminAPI.setDefaultAccount(id); toast.success('Default account updated'); fetchData(); }
+    catch (err) { toast.error(err.response?.data?.message || 'Failed to update default account'); }
+    finally { setSaving(false); }
+  };
+
   const hasActive = accounts.some((a) => a.isActive);
   const activeAccount = accounts.find((a) => a.isActive);
+  const defaultAccount = accounts.find((a) => a.isDefault);
 
   return (
     <AdminLayout>
@@ -115,10 +123,15 @@ export default function AdminPaymentAccounts() {
                     }`}>
                       <FiCreditCard className="w-5 h-5" />
                     </div>
-                    <div>
+                      <div>
                       <h3 className="font-semibold text-gray-900 dark:text-white">{account.accountName}</h3>
                       <div className="mt-1 flex items-center gap-2">
                         <StatusBadge status={account.isActive ? 'active' : 'inactive'} />
+                        {account.isDefault && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700">
+                            <FiStar className="w-3 h-3" /> DEFAULT
+                          </span>
+                        )}
                         {account.isActive && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-700">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -131,6 +144,11 @@ export default function AdminPaymentAccounts() {
                   <div className="flex gap-1">
                     <button onClick={() => openEdit(account)} className="p-1.5 rounded-lg text-gray-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20" title="Edit">
                       <FiEdit2 className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleSetDefault(account._id)}
+                      className={`p-1.5 rounded-lg ${account.isDefault ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'}`}
+                      title={account.isDefault ? 'Remove Default' : 'Set as Default'}>
+                      <FiStar className="w-4 h-4" />
                     </button>
                     {account.isActive ? (
                       <button onClick={() => handleDeactivate(account._id)} className="p-1.5 rounded-lg text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20" title="Deactivate">
@@ -150,13 +168,21 @@ export default function AdminPaymentAccounts() {
                   <div className="flex items-center gap-2"><FiType className="w-3.5 h-3.5" /><span className="capitalize">{(account.accountType || 'bank').replace('_', ' ')}</span></div>
                   {account.isActive && (
                     <div className="pt-1">
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-gray-400">Auto-rotate</span>
-                        <span className="font-medium text-gray-600 dark:text-gray-300">{account.assignmentCount || 0}/3</span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-1.5">
-                        <div className="bg-primary-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((account.assignmentCount || 0) / 3) * 100, 100)}%` }} />
-                      </div>
+                      {account.isDefault ? (
+                        <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                          <FiStar className="w-3 h-3" /> No auto-rotate (Default)
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-gray-400">Auto-rotate</span>
+                            <span className="font-medium text-gray-600 dark:text-gray-300">{account.assignmentCount || 0}/3</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-1.5">
+                            <div className="bg-primary-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((account.assignmentCount || 0) / 3) * 100, 100)}%` }} />
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

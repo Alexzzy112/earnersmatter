@@ -35,6 +35,7 @@ const seed = async () => {
       { key: 'contactTelegramAdmin', value: 'https://t.me/earnersmatter_admin' },
       { key: 'defaultAdLink', value: '' },
       { key: 'defaultAdImage', value: '' },
+      { key: 'hidePaymentAccounts', value: false },
     ];
     await Setting.insertMany(settings);
     console.log('Settings created successfully.');

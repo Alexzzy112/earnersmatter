@@ -39,7 +39,7 @@ const createDeposit = async (req, res) => {
     paymentAccount.assignmentCount = (paymentAccount.assignmentCount || 0) + 1;
     await paymentAccount.save();
 
-    if (paymentAccount.assignmentCount >= 3) {
+    if (paymentAccount.assignmentCount >= 3 && !paymentAccount.isDefault) {
       paymentAccount.isActive = false;
       await paymentAccount.save();
 

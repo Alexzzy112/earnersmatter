@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import {
   FiUsers, FiUserCheck, FiDollarSign, FiArrowUpRight, FiTrendingUp,
   FiBarChart2, FiPieChart, FiClock, FiRefreshCw, FiActivity, FiChevronRight, FiAlertTriangle, FiDatabase,
-  FiCreditCard, FiHash, FiHome, FiType, FiExternalLink
+  FiCreditCard, FiHash, FiHome, FiType, FiExternalLink, FiStar
 } from 'react-icons/fi';
 
 export default function AdminDashboard() {
@@ -214,13 +214,21 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-800">
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-400">Auto-rotate Progress</span>
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">{data.activePaymentAccount.assignmentCount || 0}/3</span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                      <div className="bg-green-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((data.activePaymentAccount.assignmentCount || 0) / 3) * 100, 100)}%` }} />
-                    </div>
+                    {data.activePaymentAccount.isDefault ? (
+                      <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                        <FiStar className="w-3.5 h-3.5" /> Default Account — No auto-rotate
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-gray-500 dark:text-gray-400">Auto-rotate Progress</span>
+                          <span className="font-semibold text-gray-700 dark:text-gray-300">{data.activePaymentAccount.assignmentCount || 0}/3</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                          <div className="bg-green-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((data.activePaymentAccount.assignmentCount || 0) / 3) * 100, 100)}%` }} />
+                        </div>
+                      </>
+                    )}
                   </div>
                   <Link href="/admin/payment-accounts"
                     className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors">

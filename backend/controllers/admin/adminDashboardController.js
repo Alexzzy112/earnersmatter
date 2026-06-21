@@ -68,6 +68,7 @@ exports.getDashboardStats = async (req, res) => {
           bankName: activePaymentAccount.bankName,
           accountType: activePaymentAccount.accountType,
           assignmentCount: activePaymentAccount.assignmentCount,
+          isDefault: activePaymentAccount.isDefault,
         } : null,
         totalPaymentAccounts,
       },

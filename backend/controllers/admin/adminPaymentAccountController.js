@@ -130,6 +130,33 @@ exports.deactivateAccount = async (req, res) => {
   }
 };
 
+exports.setDefaultAccount = async (req, res) => {
+  try {
+    const account = await PaymentAccount.findById(req.params.id);
+    if (!account) {
+      return res.status(404).json({ success: false, message: 'Payment account not found' });
+    }
+
+    await PaymentAccount.updateMany({}, { isDefault: false });
+
+    account.isDefault = !account.isDefault;
+    await account.save();
+
+    await logAction({
+      userId: req.user._id,
+      action: 'payment_account_default_toggled',
+      entityType: 'PaymentAccount',
+      entityId: account._id,
+      details: { accountName: account.accountName, isDefault: account.isDefault },
+      req,
+    });
+
+    res.status(200).json({ success: true, data: account });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.getSwitchHistory = async (req, res) => {
   try {
     const logs = await AccountSwitchLog.find()

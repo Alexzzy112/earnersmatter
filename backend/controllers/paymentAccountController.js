@@ -1,7 +1,13 @@
 const PaymentAccount = require('../models/PaymentAccount');
+const Setting = require('../models/Setting');
 
 const getActiveAccount = async (req, res) => {
   try {
+    const hideSetting = await Setting.findOne({ key: 'hidePaymentAccounts' });
+    if (hideSetting?.value === true || hideSetting?.value === 'true') {
+      return res.status(404).json({ success: false, message: 'No active payment account available' });
+    }
+
     const account = await PaymentAccount.findOne({ isActive: true });
     if (!account) {
       return res.status(404).json({ success: false, message: 'No active payment account available' });

@@ -65,6 +65,7 @@ router.post('/payment-accounts', adminPaymentAccountController.createAccount);
 router.put('/payment-accounts/:id', adminPaymentAccountController.updateAccount);
 router.put('/payment-accounts/:id/activate', adminPaymentAccountController.activateAccount);
 router.put('/payment-accounts/:id/deactivate', adminPaymentAccountController.deactivateAccount);
+router.put('/payment-accounts/:id/default', adminPaymentAccountController.setDefaultAccount);
 router.get('/payment-accounts/switch-history', adminPaymentAccountController.getSwitchHistory);
 
 // Investments

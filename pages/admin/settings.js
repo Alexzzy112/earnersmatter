@@ -7,7 +7,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import toast from 'react-hot-toast';
 import {
   FiSettings, FiSave, FiGlobe, FiDollarSign, FiPercent, FiUsers,
-  FiToggleLeft, FiToggleRight, FiRefreshCw, FiInfo, FiGift
+  FiToggleLeft, FiToggleRight, FiRefreshCw, FiInfo, FiGift, FiEyeOff
 } from 'react-icons/fi';
 
 const settingFields = [
@@ -23,6 +23,7 @@ const settingFields = [
   { key: 'bonusType', label: 'Bonus Type', type: 'select', icon: FiUsers, section: 'Referrals', options: ['fixed', 'percentage'] },
   { key: 'currencySymbol', label: 'Currency Symbol', type: 'text', icon: FiDollarSign, section: 'General' },
   { key: 'maintenanceMode', label: 'Maintenance Mode', type: 'toggle', icon: FiSettings, section: 'System' },
+  { key: 'hidePaymentAccounts', label: 'Hide Payment Accounts from Users', type: 'toggle', icon: FiEyeOff, section: 'System' },
   { key: 'defaultAdLink', label: 'Default Ad Link', type: 'text', icon: FiGlobe, section: 'Tasks', placeholder: 'https://example.com/ad' },
   { key: 'defaultAdImage', label: 'Default Ad Image URL', type: 'text', icon: FiGlobe, section: 'Tasks', placeholder: 'https://example.com/ad-image.jpg' },
 ];
