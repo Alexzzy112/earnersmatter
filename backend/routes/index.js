@@ -22,7 +22,7 @@ const adminRoutes = require('./admin/adminRoutes');
 
 router.use('/auth', authRoutes);
 router.use('/wallet', maintenanceMode, walletRoutes);
-router.use('/deposits', maintenanceMode, depositRoutes);
+router.use('/deposits', depositRoutes);
 router.use('/withdrawals', maintenanceMode, withdrawalRoutes);
 router.use('/products', productRoutes);
 router.use('/investments', maintenanceMode, investmentRoutes);
