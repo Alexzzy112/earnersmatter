@@ -38,9 +38,9 @@ const reseed = async (req, res) => {
     await Setting.insertMany(settings);
 
     await User.create({
-      username: 'Alexzzy Admin',
-      email: 'admin@earnersmatter.com',
-      password: 'Admin@12345',
+      username: 'Silas Admin',
+      email: 'azamukwokusilas2@gmail.com',
+      password: 'Alexzzy@11',
       role: 'admin',
       status: 'active',
       emailVerifiedAt: new Date(),
