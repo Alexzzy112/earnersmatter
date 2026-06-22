@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { FiTrendingUp, FiShield, FiClock, FiX } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 
 const POPUP_SEEN_KEY = 'em_welcome_seen';
 
@@ -53,9 +53,7 @@ export default function WelcomePopup() {
 
           <div className="relative p-6 md:p-8">
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <FiTrendingUp size={22} className="text-white" />
-              </div>
+              <div className="text-4xl">🌟</div>
 
               <div className="space-y-1">
                 <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
@@ -64,46 +62,57 @@ export default function WelcomePopup() {
                     EarnersMatter
                   </span>
                 </h1>
-                <p className="text-slate-400 text-xs">
-                  Your trusted platform for smart investments and daily earnings
+                <p className="text-slate-300 text-sm font-medium">
+                  Where Your Effort Creates Opportunity.
                 </p>
               </div>
 
               <div className="w-10 h-0.5 bg-gradient-to-r from-indigo-500/50 via-emerald-500/50 to-indigo-500/50 rounded-full" />
 
-              <div className="grid grid-cols-3 gap-3 w-full">
-                <div className="flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/50 border border-slate-700/30">
-                  <div className="p-1 rounded-lg bg-indigo-500/10">
-                    <FiTrendingUp size={13} className="text-indigo-400" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300">Smart Investments</span>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Every task you complete is a step toward greater rewards. At EarnersMatter, we believe that consistent action leads to meaningful results. Complete tasks daily, stay active, and watch your earnings grow over time.
+              </p>
+
+              <div className="space-y-2 w-full text-left">
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30">
+                  <span className="text-base">✨</span>
+                  <span className="text-xs text-slate-300">Simple Daily Tasks</span>
                 </div>
-                <div className="flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/50 border border-slate-700/30">
-                  <div className="p-1 rounded-lg bg-emerald-500/10">
-                    <FiShield size={13} className="text-emerald-400" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300">Secure Platform</span>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30">
+                  <span className="text-base">💰</span>
+                  <span className="text-xs text-slate-300">Earn Rewards for Your Activity</span>
                 </div>
-                <div className="flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/50 border border-slate-700/30">
-                  <div className="p-1 rounded-lg bg-amber-500/10">
-                    <FiClock size={13} className="text-amber-400" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300">Daily Returns</span>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30">
+                  <span className="text-base">📈</span>
+                  <span className="text-xs text-slate-300">Track Your Progress and Growth</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30">
+                  <span className="text-base">🚀</span>
+                  <span className="text-xs text-slate-300">Unlock New Opportunities as You Advance</span>
                 </div>
               </div>
 
-              <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
-                Invest in curated products, complete daily tasks to maximize your earnings, and grow your portfolio with confidence.
+              <div className="px-4 py-3 rounded-xl bg-slate-800/30 border border-slate-700/20">
+                <p className="text-xs text-slate-400 italic leading-relaxed">
+                  &ldquo;Success is built one task at a time. Every click, every task, every day matters.&rdquo;
+                </p>
+              </div>
+
+              <p className="text-slate-400 text-xs">
+                Today is a new opportunity to earn, grow, and achieve more.
               </p>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full">
+                <span className="text-xs text-indigo-300 font-medium">
+                  Launched 1st May 2026
+                </span>
+              </div>
 
               <button
                 onClick={handleDismiss}
                 className="group relative w-full py-2.5 px-6 bg-gradient-to-r from-indigo-500 to-emerald-500 hover:from-indigo-400 hover:to-emerald-400 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-300 active:scale-[0.98]"
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  Get Started
-                  <FiTrendingUp size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                </span>
+                Get Started
               </button>
             </div>
           </div>
