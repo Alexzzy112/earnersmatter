@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { FiStar, FiCheck, FiInfo } from 'react-icons/fi';
+import { FiTrendingUp, FiShield, FiClock, FiX } from 'react-icons/fi';
 
 const POPUP_SEEN_KEY = 'em_welcome_seen';
 
@@ -29,7 +29,7 @@ export default function WelcomePopup() {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div
-        className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-500 ${
+        className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${
           dismissing ? 'opacity-0' : 'opacity-100'
         }`}
         onClick={handleDismiss}
@@ -40,88 +40,72 @@ export default function WelcomePopup() {
           dismissing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
         }`}
       >
-        {/* Animated gradient border */}
-        <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-300 to-orange-500 opacity-75 blur-sm animate-pulse" />
-        <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-300 to-orange-500 opacity-50" />
+        <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-2xl overflow-hidden border border-slate-700/50 shadow-2xl">
+          <div className="absolute -top-24 -right-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl" />
 
-        <div className="relative bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-          {/* Background decorative elements */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
+          <button
+            onClick={handleDismiss}
+            className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-700/50 transition-colors"
+          >
+            <FiX size={18} />
+          </button>
 
-          <div className="relative p-8 md:p-10 text-center space-y-6">
-            {/* Logo / Icon */}
-            <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30 animate-bounce-slow">
-              <FiStar size={36} className="text-white" />
-            </div>
+          <div className="relative p-6 md:p-8">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <FiTrendingUp size={22} className="text-white" />
+              </div>
 
-            {/* Decorative sparkles */}
-            <div className="absolute top-8 left-8 text-yellow-400/30">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-            </div>
-            <div className="absolute bottom-8 right-8 text-yellow-400/20">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-            </div>
+              <div className="space-y-1">
+                <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+                  Welcome to{' '}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">
+                    EarnersMatter
+                  </span>
+                </h1>
+                <p className="text-slate-400 text-xs">
+                  Your trusted platform for smart investments and daily earnings
+                </p>
+              </div>
 
-            {/* Title */}
-            <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-orange-300">
-                Welcome to EarnersMatter!
-              </h1>
-              <div className="mt-2 h-0.5 w-20 mx-auto bg-gradient-to-r from-amber-400 to-orange-500 rounded-full" />
-            </div>
+              <div className="w-10 h-0.5 bg-gradient-to-r from-indigo-500/50 via-emerald-500/50 to-indigo-500/50 rounded-full" />
 
-            {/* Company Description */}
-            <div className="space-y-3 text-sm md:text-base leading-relaxed">
-              <p className="text-gray-300">
-                EarnersMatter is a premier <span className="text-amber-300 font-semibold">Nigerian investment platform</span> designed to help you grow your wealth through carefully curated investment products and daily earning opportunities.
-              </p>
-              <p className="text-gray-300">
-                We combine the power of <span className="text-amber-300 font-semibold">smart investments</span> with an engaging daily task system, allowing you to earn consistently while building a diversified portfolio — all from the comfort of your home.
-              </p>
-              <div className="flex items-center justify-center gap-6 pt-2 text-gray-400 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <FiCheck className="text-green-400" size={14} />
-                  <span>Secure &amp; Reliable</span>
+              <div className="grid grid-cols-3 gap-3 w-full">
+                <div className="flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/50 border border-slate-700/30">
+                  <div className="p-1 rounded-lg bg-indigo-500/10">
+                    <FiTrendingUp size={13} className="text-indigo-400" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300">Smart Investments</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <FiCheck className="text-green-400" size={14} />
-                  <span>24/7 Support</span>
+                <div className="flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/50 border border-slate-700/30">
+                  <div className="p-1 rounded-lg bg-emerald-500/10">
+                    <FiShield size={13} className="text-emerald-400" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300">Secure Platform</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <FiCheck className="text-green-400" size={14} />
-                  <span>Quick Withdrawals</span>
+                <div className="flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/50 border border-slate-700/30">
+                  <div className="p-1 rounded-lg bg-amber-500/10">
+                    <FiClock size={13} className="text-amber-400" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300">Daily Returns</span>
                 </div>
               </div>
+
+              <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
+                Invest in curated products, complete daily tasks to maximize your earnings, and grow your portfolio with confidence.
+              </p>
+
+              <button
+                onClick={handleDismiss}
+                className="group relative w-full py-2.5 px-6 bg-gradient-to-r from-indigo-500 to-emerald-500 hover:from-indigo-400 hover:to-emerald-400 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-300 active:scale-[0.98]"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  Get Started
+                  <FiTrendingUp size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </button>
             </div>
-
-            {/* Launch Date Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-full">
-              <FiInfo size={14} className="text-amber-400" />
-              <span className="text-amber-300 text-sm font-medium">
-                Launched <span className="font-bold">1st April 2026</span> — Join thousands of smart investors!
-              </span>
-            </div>
-
-            {/* OK Button */}
-            <button
-              onClick={handleDismiss}
-              className="relative group w-full py-3.5 px-8 mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold text-lg rounded-xl shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 active:scale-[0.98] overflow-hidden"
-            >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                Get Started
-                <FiCheck size={20} />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-            </button>
-
-            <p className="text-xs text-gray-500">
-              Start your investment journey today and watch your earnings grow!
-            </p>
           </div>
         </div>
       </div>
