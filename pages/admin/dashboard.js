@@ -48,6 +48,24 @@ export default function AdminDashboard() {
   ];
 
   const [reseeding, setReseeding] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const handleResetFinancials = async () => {
+    const confirmed = window.confirm(
+      'This will DELETE all financial records (deposits, withdrawals, investments, transactions, earnings, referrals) and reset all user balances to ₦0. Users, products, and settings will NOT be affected. Continue?'
+    );
+    if (!confirmed) return;
+    setResetting(true);
+    try {
+      const res = await adminAPI.resetFinancials();
+      toast.success(res.message || 'Financial records cleared');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to reset financial records');
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const handleReseed = async () => {
     const confirmed = window.confirm(
@@ -254,6 +272,17 @@ export default function AdminDashboard() {
                     <span className="font-medium text-gray-900 dark:text-white">{(data.pendingDeposits || 0) + (data.pendingWithdrawals || 0)}</span>
                   </div>
                 </div>
+                <button
+                  onClick={handleResetFinancials}
+                  disabled={resetting}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors disabled:opacity-50"
+                >
+                  <FiDollarSign className="w-4 h-4" />
+                  {resetting ? 'Clearing...' : 'Reset Financial Records'}
+                  <FiAlertTriangle className="w-4 h-4" />
+                </button>
+                <p className="mt-1 text-xs text-gray-400 dark:text-gray-500 text-center">Clears all money records, keeps users &amp; products</p>
+
                 <button
                   onClick={handleReseed}
                   disabled={reseeding}

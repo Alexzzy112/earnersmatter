@@ -18,6 +18,7 @@ const adminNotificationController = require('../../controllers/admin/adminNotifi
 const adminTaskController = require('../../controllers/admin/adminTaskController');
 const adminReseedController = require('../../controllers/admin/adminReseedController');
 const adminResetProductsController = require('../../controllers/admin/adminResetProductsController');
+const adminResetFinancialsController = require('../../controllers/admin/adminResetFinancialsController');
 
 router.use(auth, adminMiddleware);
 
@@ -105,5 +106,8 @@ router.post('/tasks/reset', adminTaskController.resetTasks);
 
 // Reseed
 router.post('/reseed', adminReseedController.reseed);
+
+// Reset Financials
+router.post('/reset-financials', adminResetFinancialsController.resetFinancials);
 
 module.exports = router;
