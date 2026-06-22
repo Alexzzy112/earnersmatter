@@ -9,6 +9,7 @@ const PaymentAccount = require('../models/PaymentAccount');
 
 const seed = async () => {
   try {
+    console.log('WARNING: This will DROP all collections and reseed the database!');
     await connectDB();
     console.log('Connected to MongoDB...');
 
@@ -85,4 +86,15 @@ const seed = async () => {
   }
 };
 
-seed();
+if (require.main === module) {
+  console.log('\n⚠️  DANGER: This will DROP ALL COLLECTIONS and reseed!');
+  console.log('⚠️  Press Ctrl+C within 5 seconds to cancel...\n');
+  const timer = setTimeout(() => {
+    seed();
+  }, 5000);
+  process.on('SIGINT', () => {
+    clearTimeout(timer);
+    console.log('\n❌ Seeding cancelled.');
+    process.exit(0);
+  });
+}
