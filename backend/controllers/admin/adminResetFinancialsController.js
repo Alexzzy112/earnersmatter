@@ -7,7 +7,6 @@ const Referral = require('../../models/Referral');
 const UserTask = require('../../models/UserTask');
 const Notification = require('../../models/Notification');
 const AccountSwitchLog = require('../../models/AccountSwitchLog');
-const User = require('../../models/User');
 const { logAction } = require('../../utils/auditLogger');
 
 exports.resetFinancials = async (req, res) => {
@@ -22,17 +21,6 @@ exports.resetFinancials = async (req, res) => {
       UserTask.deleteMany({}),
       Notification.deleteMany({}),
       AccountSwitchLog.deleteMany({}),
-      User.updateMany({}, {
-        $set: {
-          walletBalance: 0,
-          totalDeposits: 0,
-          totalWithdrawals: 0,
-          totalInvestments: 0,
-          totalEarnings: 0,
-          referralBalance: 0,
-          referralEarnings: 0,
-        },
-      }),
     ]);
 
     const counts = {
@@ -45,7 +33,6 @@ exports.resetFinancials = async (req, res) => {
       userTasks: result[6].deletedCount,
       notifications: result[7].deletedCount,
       accountSwitchLogs: result[8].deletedCount,
-      usersReset: result[9].modifiedCount,
     };
 
     await logAction({

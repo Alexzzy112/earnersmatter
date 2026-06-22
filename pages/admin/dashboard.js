@@ -52,7 +52,7 @@ export default function AdminDashboard() {
 
   const handleResetFinancials = async () => {
     const confirmed = window.confirm(
-      'This will DELETE all financial records (deposits, withdrawals, investments, transactions, earnings, referrals) and reset all user balances to ₦0. Users, products, and settings will NOT be affected. Continue?'
+      'This will DELETE all financial records (deposits, withdrawals, investments, transactions, earnings, referrals). User account balances will NOT be affected. Continue?'
     );
     if (!confirmed) return;
     setResetting(true);
