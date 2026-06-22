@@ -8,7 +8,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import StatusBadge from '@/components/shared/StatusBadge';
 import toast from 'react-hot-toast';
 import {
-  FiDollarSign, FiCheck, FiX, FiSearch, FiChevronLeft, FiChevronRight, FiImage, FiEye, FiTrash2
+  FiDollarSign, FiCheck, FiX, FiSearch, FiChevronLeft, FiChevronRight, FiImage, FiEye, FiTrash2, FiPlusCircle
 } from 'react-icons/fi';
 
 const statusFilters = ['all', 'pending', 'approved', 'rejected'];
@@ -26,6 +26,59 @@ export default function AdminDeposits() {
   const [rejectNote, setRejectNote] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const [creditModal, setCreditModal] = useState(false);
+  const [userQuery, setUserQuery] = useState('');
+  const [userResults, setUserResults] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [creditAmount, setCreditAmount] = useState('');
+  const [creditNote, setCreditNote] = useState('');
+  const [searchingUser, setSearchingUser] = useState(false);
+
+  const searchUsers = useCallback(async (query) => {
+    if (!query.trim()) { setUserResults([]); return; }
+    setSearchingUser(true);
+    try {
+      const res = await adminAPI.getUsers({ search: query, limit: 10 });
+      setUserResults(res.data || []);
+    } catch {
+      setUserResults([]);
+    } finally {
+      setSearchingUser(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => searchUsers(userQuery), 300);
+    return () => clearTimeout(timer);
+  }, [userQuery, searchUsers]);
+
+  const handleManualCredit = async () => {
+    if (!selectedUser || !creditAmount || Number(creditAmount) <= 0) {
+      toast.error('Select a user and enter a valid amount');
+      return;
+    }
+    setSaving(true);
+    try {
+      await adminAPI.manualCredit({
+        userId: selectedUser._id,
+        amount: Number(creditAmount),
+        note: creditNote,
+      });
+      toast.success(`₦${Number(creditAmount).toLocaleString()} credited to ${selectedUser.username}`);
+      setCreditModal(false);
+      setSelectedUser(null);
+      setCreditAmount('');
+      setCreditNote('');
+      setUserQuery('');
+      setUserResults([]);
+      fetchDeposits();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to credit account');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const fetchDeposits = useCallback(async () => {
     setLoading(true);
@@ -100,8 +153,8 @@ export default function AdminDeposits() {
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Review and manage user deposits</p>
         </div>
 
-        <div className="flex flex-wrap gap-3 items-center">
-          <div className="relative flex-1 max-w-md">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
+            <div className="relative flex-1 max-w-md">
             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input type="text" placeholder="Search by user or amount..." value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -118,6 +171,10 @@ export default function AdminDeposits() {
                 {s}
               </button>
             ))}
+            <button onClick={() => setCreditModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-medium text-sm rounded-lg shadow-lg shadow-emerald-500/20 transition-all duration-300">
+              <FiPlusCircle className="w-4 h-4" /> Manual Credit
+            </button>
           </div>
         </div>
 
@@ -247,6 +304,50 @@ export default function AdminDeposits() {
             <button onClick={() => setDeleteTarget(null)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700">Cancel</button>
             <button onClick={handleDelete} disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50">
               {saving ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </Modal>
+
+        {/* Manual Credit Modal */}
+        <Modal isOpen={creditModal} onClose={() => { setCreditModal(false); setSelectedUser(null); setCreditAmount(''); setCreditNote(''); setUserQuery(''); setUserResults([]); }} title="Manual Credit" size="md">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search User</label>
+              <input type="text" placeholder="Type username or email..." value={userQuery}
+                onChange={(e) => setUserQuery(e.target.value)}
+                className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500" />
+              {searchingUser && <p className="text-xs text-gray-400 mt-1">Searching...</p>}
+              {userResults.length > 0 && (
+                <div className="mt-1 border border-gray-200 dark:border-dark-700 rounded-lg max-h-40 overflow-y-auto">
+                  {userResults.map((u) => (
+                    <button key={u._id} type="button" onClick={() => { setSelectedUser(u); setUserQuery(`${u.username} (${u.email})`); setUserResults([]); }}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors ${selectedUser?._id === u._id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}>
+                      <span className="font-medium text-gray-900 dark:text-white">{u.username}</span>
+                      <span className="text-gray-500 dark:text-gray-400 ml-2">{u.email}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (₦)</label>
+              <input type="number" min="1" placeholder="Enter amount..." value={creditAmount}
+                onChange={(e) => setCreditAmount(e.target.value)}
+                className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Note (optional)</label>
+              <textarea placeholder="Reason for manual credit..." value={creditNote}
+                onChange={(e) => setCreditNote(e.target.value)} rows={2}
+                className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500" />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-dark-700">
+            <button onClick={() => { setCreditModal(false); setSelectedUser(null); setCreditAmount(''); setCreditNote(''); setUserQuery(''); setUserResults([]); }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700">Cancel</button>
+            <button onClick={handleManualCredit} disabled={saving || !selectedUser || !creditAmount || Number(creditAmount) <= 0}
+              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg hover:from-emerald-400 hover:to-green-500 disabled:opacity-50">
+              {saving ? 'Processing...' : `Credit ₦${Number(creditAmount || 0).toLocaleString()}`}
             </button>
           </div>
         </Modal>

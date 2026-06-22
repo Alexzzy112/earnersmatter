@@ -167,6 +167,68 @@ exports.deleteDeposit = async (req, res) => {
   }
 };
 
+exports.manualCredit = async (req, res) => {
+  try {
+    const { userId, amount, note } = req.body;
+
+    if (!userId || !amount || amount <= 0) {
+      return res.status(400).json({ success: false, message: 'Valid userId and amount are required' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const reference = generateReference();
+
+    const deposit = await Deposit.create({
+      userId: user._id,
+      amount,
+      status: 'approved',
+      reviewedBy: req.user._id,
+      reviewedAt: new Date(),
+      adminNote: note || 'Manual credit by admin',
+      transactionReference: reference,
+    });
+
+    user.walletBalance += amount;
+    user.totalDeposits += amount;
+    await user.save();
+
+    await Transaction.create({
+      userId: user._id,
+      type: 'deposit',
+      amount,
+      balanceBefore: user.walletBalance - amount,
+      balanceAfter: user.walletBalance,
+      description: note || 'Manual credit by admin',
+      reference,
+      status: 'completed',
+    });
+
+    await Notification.create({
+      userId: user._id,
+      type: 'deposit',
+      title: 'Account Credited',
+      message: `Your wallet has been credited with ₦${amount.toLocaleString()}${note ? ` — ${note}` : ''}`,
+    });
+
+    await logAction({
+      userId: req.user._id,
+      action: 'manual_credit',
+      entityType: 'Deposit',
+      entityId: deposit._id,
+      details: { userId: user._id, username: user.username, amount, note },
+      req,
+    });
+
+    res.status(201).json({ success: true, data: deposit, message: `₦${amount.toLocaleString()} credited to ${user.username}` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.rejectDeposit = async (req, res) => {
   try {
     const { adminNote } = req.body;

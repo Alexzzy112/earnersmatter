@@ -36,6 +36,7 @@ router.delete('/users/:id', adminUserController.deleteUser);
 // Deposits
 router.get('/deposits', adminDepositController.getAllDeposits);
 router.get('/deposits/:id', adminDepositController.getDepositById);
+router.post('/deposits/manual-credit', adminDepositController.manualCredit);
 router.put('/deposits/:id/approve', adminDepositController.approveDeposit);
 router.put('/deposits/:id/reject', adminDepositController.rejectDeposit);
 router.delete('/deposits/:id', adminDepositController.deleteDeposit);
