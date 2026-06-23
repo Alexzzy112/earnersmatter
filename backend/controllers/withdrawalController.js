@@ -36,12 +36,12 @@ const createWithdrawal = async (req, res) => {
         });
       }
 
-      const daysArray = [1, 5];
+      const daysArray = [3];
       const today = new Date().getDay();
       if (!daysArray.includes(today)) {
         return res.status(400).json({
           success: false,
-          message: 'Daily Task withdrawals are only available on Monday and Friday',
+          message: 'Daily Task withdrawals are only available on Wednesday',
         });
       }
 

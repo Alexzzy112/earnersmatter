@@ -31,8 +31,8 @@ const BANKS = [
   'Smartcash',
 ];
 
-const WITHDRAWAL_DAYS = [1, 5];
-const DAY_NAMES = { 1: 'Monday', 5: 'Friday' };
+const WITHDRAWAL_DAYS = [3];
+const DAY_NAMES = { 3: 'Wednesday' };
 
 export default function WithdrawPage() {
   const [withdrawals, setWithdrawals] = useState([]);
@@ -124,7 +124,7 @@ export default function WithdrawPage() {
           icon: FiCalendar,
           color: 'amber',
           title: 'Withdrawal Not Available Today',
-          message: `Daily Task withdrawals are restricted to <strong>Mondays</strong> and <strong>Fridays</strong>. Since today is <strong>${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today]}</strong>, you will be able to withdraw on the next available day: <strong>${nextWithdrawalDay()}</strong>. Please check back then.`,
+          message: `Daily Task withdrawals are restricted to <strong>Wednesdays</strong> only. Since today is <strong>${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today]}</strong>, you will be able to withdraw on the next available day: <strong>${nextWithdrawalDay()}</strong>. Please check back then.`,
         });
       } else {
         setErrorModal({
@@ -217,7 +217,7 @@ export default function WithdrawPage() {
   };
 
   const nextWithdrawalDay = () => {
-    const days = [1, 5];
+    const days = [3];
     for (const d of days) {
       if (d > today) return DAY_NAMES[d];
     }
@@ -251,7 +251,7 @@ export default function WithdrawPage() {
             <div>
               <h3 className="font-semibold text-warning-700 dark:text-warning-400 text-sm">Daily Task Withdrawal Unavailable Today</h3>
               <p className="text-sm text-warning-600 dark:text-warning-300 mt-1">
-                Daily Task withdrawals can only be processed on Monday and Friday. Next available day: {nextWithdrawalDay()}.
+                Daily Task withdrawals can only be processed on Wednesday. Next available day: {nextWithdrawalDay()}.
               </p>
             </div>
           </div>
@@ -372,7 +372,7 @@ export default function WithdrawPage() {
                 </div>
                 <ul className="text-xs text-blue-600 dark:text-blue-300 space-y-1 ml-5 list-disc">
                   <li>Minimum withdrawal: <strong>₦5,000</strong></li>
-                  <li>Available on: <strong>Monday</strong> and <strong>Friday</strong> only</li>
+                  <li>Available on: <strong>Wednesday</strong> only</li>
                   <li>Withdraw the earnings you have accumulated from completing daily tasks</li>
                   <li>Your wallet balance must be at least the withdrawal amount</li>
                 </ul>
@@ -398,7 +398,7 @@ export default function WithdrawPage() {
                 <>
                   <FiCalendar size={14} className="text-primary-600 dark:text-primary-400" />
                   <p className="text-xs text-primary-700 dark:text-primary-400 font-medium">
-                    Withdrawal Days: <strong>Monday &amp; Friday</strong>
+                    Withdrawal Days: <strong>Wednesday</strong>
                     {isAllowedDay && <span className="text-success-500 ml-1">— Available Today</span>}
                   </p>
                 </>
