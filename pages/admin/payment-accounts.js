@@ -85,7 +85,7 @@ export default function AdminPaymentAccounts() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Payment Accounts</h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage payment accounts for deposits</p>
           </div>
-          {accounts.length < 4 && (
+          {accounts.length < 3 && (
             <button onClick={openCreate} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700">
               <FiPlus className="w-4 h-4" /> Add Account
             </button>
@@ -166,6 +166,25 @@ export default function AdminPaymentAccounts() {
                   <div className="flex items-center gap-2"><FiHash className="w-3.5 h-3.5" /><span className="font-mono">{account.accountNumber}</span></div>
                   <div className="flex items-center gap-2"><FiHome className="w-3.5 h-3.5" /><span>{account.bankName}</span></div>
                   <div className="flex items-center gap-2"><FiType className="w-3.5 h-3.5" /><span className="capitalize">{(account.accountType || 'bank').replace('_', ' ')}</span></div>
+                  {account.isActive && (
+                    <div className="pt-1">
+                      {account.isDefault ? (
+                        <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                          <FiStar className="w-3 h-3" /> No auto-rotate (Default)
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-gray-400">Auto-rotate</span>
+                            <span className="font-medium text-gray-600 dark:text-gray-300">{account.assignmentCount || 0}/3</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-1.5">
+                            <div className="bg-primary-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((account.assignmentCount || 0) / 3) * 100, 100)}%` }} />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
