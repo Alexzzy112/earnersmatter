@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { withdrawalAPI, authAPI, settingsAPI } from '@/lib/api';
+import { withdrawalAPI, authAPI, settingsAPI, investmentAPI } from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import Modal from '@/components/shared/Modal';
@@ -48,6 +48,7 @@ export default function WithdrawPage() {
   const [withdrawalType, setWithdrawalType] = useState('daily_task');
   const [walletBalance, setWalletBalance] = useState(0);
   const [referralBalance, setReferralBalance] = useState(0);
+  const [hasPurchasedProduct, setHasPurchasedProduct] = useState(false);
   const [errorModal, setErrorModal] = useState(null);
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
@@ -70,10 +71,11 @@ export default function WithdrawPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [wdRes, userRes, settingsRes] = await Promise.all([
+        const [wdRes, userRes, settingsRes, invRes] = await Promise.all([
           withdrawalAPI.getAll(),
           authAPI.getMe(),
           settingsAPI.getWithdrawal(),
+          investmentAPI.getAll(),
         ]);
         setWithdrawals(wdRes.data.withdrawals || wdRes.data);
         const u = userRes.data || userRes.user || userRes;
@@ -87,6 +89,8 @@ export default function WithdrawPage() {
         }
         const s = settingsRes.data || {};
         if (s.chargeRate) setChargeRate(Number(s.chargeRate));
+        const investments = invRes.data || [];
+        setHasPurchasedProduct(investments.length > 0);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load withdrawal data');
       } finally {
@@ -118,6 +122,15 @@ export default function WithdrawPage() {
   };
 
   const checkWithdrawalConditions = () => {
+    if (!hasPurchasedProduct) {
+      setErrorModal({
+        icon: FiAlertCircle,
+        color: 'red',
+        title: 'Account Not Activated',
+        message: 'You need to activate your account by purchasing a product first before you can make any withdrawals. Please go to the <strong>Products</strong> page to purchase a plan.',
+      });
+      return false;
+    }
     if (!canSubmit) {
       if (isDailyTask) {
         setErrorModal({
@@ -245,7 +258,18 @@ export default function WithdrawPage() {
         </div>
 
         {/* Withdrawal Type Info */}
-        {withdrawalType === 'daily_task' && !isAllowedDay && (
+        {!hasPurchasedProduct && (
+          <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <FiAlertCircle size={20} className="text-red-500 mt-0.5 shrink-0" />
+            <div>
+              <h3 className="font-semibold text-red-700 dark:text-red-400 text-sm">Account Not Activated</h3>
+              <p className="text-sm text-red-600 dark:text-red-300 mt-1">
+                You must purchase a product first to activate your account before you can make withdrawals. Visit the <strong>Products</strong> page to get started.
+              </p>
+            </div>
+          </div>
+        )}
+        {hasPurchasedProduct && withdrawalType === 'daily_task' && !isAllowedDay && (
           <div className="flex items-start gap-3 p-4 bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl">
             <FiAlertCircle size={20} className="text-warning-500 mt-0.5 shrink-0" />
             <div>
@@ -256,7 +280,7 @@ export default function WithdrawPage() {
             </div>
           </div>
         )}
-        {withdrawalType === 'referral_bonus' && !isReferralTime && (
+        {hasPurchasedProduct && withdrawalType === 'referral_bonus' && !isReferralTime && (
           <div className="flex items-start gap-3 p-4 bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl">
             <FiAlertCircle size={20} className="text-warning-500 mt-0.5 shrink-0" />
             <div>

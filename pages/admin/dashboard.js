@@ -52,7 +52,7 @@ export default function AdminDashboard() {
 
   const handleResetFinancials = async () => {
     const confirmed = window.confirm(
-      'This will DELETE all financial records (deposits, withdrawals, investments, transactions, earnings, referrals). User account balances will NOT be affected. Continue?'
+      'This will DELETE deposits, withdrawals, transactions, and audit logs. User accounts, investments, earnings schedules, referrals, and activation status will NOT be affected. Continue?'
     );
     if (!confirmed) return;
     setResetting(true);

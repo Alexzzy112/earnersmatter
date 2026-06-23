@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Withdrawal = require('../models/Withdrawal');
 const Transaction = require('../models/Transaction');
+const Investment = require('../models/Investment');
 const Setting = require('../models/Setting');
 const helpers = require('../utils/helpers');
 const { logAction } = require('../utils/auditLogger');
@@ -25,6 +26,14 @@ const createWithdrawal = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const investmentCount = await Investment.countDocuments({ userId: req.user._id });
+    if (investmentCount === 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account not activated. You must purchase a product first before you can make withdrawals.',
+      });
     }
 
     if (type === 'daily_task') {
