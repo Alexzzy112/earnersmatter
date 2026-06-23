@@ -63,7 +63,7 @@ export default function WithdrawPage() {
   const netAmount = numericAmount - charge;
 
   const isDailyTask = withdrawalType === 'daily_task';
-  const minWithdrawal = isDailyTask ? 5000 : 2000;
+  const minWithdrawal = isDailyTask ? 4000 : 2000;
 
   const canSubmit = isDailyTask ? isAllowedDay : isReferralTime;
 
@@ -371,7 +371,7 @@ export default function WithdrawPage() {
                   Daily Task Earnings — Withdrawal Rules
                 </div>
                 <ul className="text-xs text-blue-600 dark:text-blue-300 space-y-1 ml-5 list-disc">
-                  <li>Minimum withdrawal: <strong>₦5,000</strong></li>
+                  <li>Minimum withdrawal: <strong>₦4,000</strong></li>
                   <li>Available on: <strong>Wednesday</strong> only</li>
                   <li>Withdraw the earnings you have accumulated from completing daily tasks</li>
                   <li>Your wallet balance must be at least the withdrawal amount</li>

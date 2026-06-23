@@ -28,7 +28,7 @@ const createWithdrawal = async (req, res) => {
     }
 
     if (type === 'daily_task') {
-      const minWithdrawal = 5000;
+      const minWithdrawal = 4000;
       if (parsedAmount < minWithdrawal) {
         return res.status(400).json({
           success: false,
