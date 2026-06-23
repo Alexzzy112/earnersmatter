@@ -43,7 +43,7 @@ const createDeposit = async (req, res) => {
       paymentAccount.isActive = false;
       await paymentAccount.save();
 
-      const nextAccount = await PaymentAccount.findOne({ _id: { $ne: paymentAccount._id }, isActive: false });
+      const nextAccount = await PaymentAccount.findOne({ _id: { $ne: paymentAccount._id }, isActive: false }).sort({ assignmentCount: 1, _id: 1 });
       if (nextAccount) {
         nextAccount.isActive = true;
         nextAccount.assignmentCount = 0;
