@@ -8,7 +8,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import StatusBadge from '@/components/shared/StatusBadge';
 import toast from 'react-hot-toast';
 import {
-  FiCreditCard, FiPlus, FiEdit2, FiPower, FiAlertTriangle, FiClock, FiHash, FiHome, FiType, FiStar
+  FiCreditCard, FiPlus, FiEdit2, FiPower, FiAlertTriangle, FiClock, FiHash, FiHome, FiType, FiStar, FiTrash2
 } from 'react-icons/fi';
 
 const emptyAccount = { accountName: '', accountNumber: '', bankName: '', accountType: 'bank', isActive: false, isDefault: false };
@@ -70,6 +70,14 @@ export default function AdminPaymentAccounts() {
     setSaving(true);
     try { await adminAPI.setDefaultAccount(id); toast.success('Default account updated'); fetchData(); }
     catch (err) { toast.error(err.response?.data?.message || 'Failed to update default account'); }
+    finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this payment account?')) return;
+    setSaving(true);
+    try { await adminAPI.deletePaymentAccount(id); toast.success('Account deleted'); fetchData(); }
+    catch (err) { toast.error(err.response?.data?.message || 'Failed to delete account'); }
     finally { setSaving(false); }
   };
 
@@ -160,6 +168,9 @@ export default function AdminPaymentAccounts() {
                         <FiPower className="w-4 h-4" />
                       </button>
                     )}
+                    <button onClick={() => handleDelete(account._id)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete">
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
                 <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">

@@ -157,6 +157,28 @@ exports.setDefaultAccount = async (req, res) => {
   }
 };
 
+exports.deleteAccount = async (req, res) => {
+  try {
+    const account = await PaymentAccount.findByIdAndDelete(req.params.id);
+    if (!account) {
+      return res.status(404).json({ success: false, message: 'Payment account not found' });
+    }
+
+    await logAction({
+      userId: req.user._id,
+      action: 'payment_account_deleted',
+      entityType: 'PaymentAccount',
+      entityId: req.params.id,
+      details: { accountName: account.accountName, accountNumber: account.accountNumber },
+      req,
+    });
+
+    res.status(200).json({ success: true, message: 'Payment account deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.getSwitchHistory = async (req, res) => {
   try {
     const logs = await AccountSwitchLog.find()
