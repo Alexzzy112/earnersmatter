@@ -8,10 +8,10 @@ import EmptyState from '@/components/shared/EmptyState';
 import StatusBadge from '@/components/shared/StatusBadge';
 import toast from 'react-hot-toast';
 import {
-  FiCreditCard, FiPlus, FiEdit2, FiPower, FiAlertTriangle, FiClock, FiHash, FiType, FiStar
+  FiCreditCard, FiPlus, FiEdit2, FiPower, FiAlertTriangle, FiClock, FiHash, FiHome, FiType, FiStar
 } from 'react-icons/fi';
 
-const emptyAccount = { accountName: '', accountNumber: '', accountType: 'bank', isActive: false, isDefault: false };
+const emptyAccount = { accountName: '', accountNumber: '', bankName: '', accountType: 'bank', isActive: false, isDefault: false };
 
 export default function AdminPaymentAccounts() {
   const [accounts, setAccounts] = useState([]);
@@ -37,7 +37,7 @@ export default function AdminPaymentAccounts() {
 
   const openCreate = () => { setFormData({ ...emptyAccount }); setEditing(null); setShowForm(true); };
   const openEdit = (account) => {
-    setFormData({ accountName: account.accountName || '', accountNumber: account.accountNumber || '', accountType: account.accountType || 'bank', isActive: account.isActive || false });
+    setFormData({ accountName: account.accountName || '', accountNumber: account.accountNumber || '', bankName: account.bankName || '', accountType: account.accountType || 'bank', isActive: account.isActive || false });
     setEditing(account._id); setShowForm(true);
   };
 
@@ -164,26 +164,8 @@ export default function AdminPaymentAccounts() {
                 </div>
                 <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
                   <div className="flex items-center gap-2"><FiHash className="w-3.5 h-3.5" /><span className="font-mono">{account.accountNumber}</span></div>
+                  <div className="flex items-center gap-2"><FiHome className="w-3.5 h-3.5" /><span>{account.bankName}</span></div>
                   <div className="flex items-center gap-2"><FiType className="w-3.5 h-3.5" /><span className="capitalize">{(account.accountType || 'bank').replace('_', ' ')}</span></div>
-                  {account.isActive && (
-                    <div className="pt-1">
-                      {account.isDefault ? (
-                        <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
-                          <FiStar className="w-3 h-3" /> No auto-rotate (Default)
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="text-gray-400">Auto-rotate</span>
-                            <span className="font-medium text-gray-600 dark:text-gray-300">{account.assignmentCount || 0}/3</span>
-                          </div>
-                          <div className="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-1.5">
-                            <div className="bg-primary-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(((account.assignmentCount || 0) / 3) * 100, 100)}%` }} />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
@@ -241,6 +223,11 @@ export default function AdminPaymentAccounts() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account Number *</label>
               <input className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                 value={formData.accountNumber} onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })} placeholder="1234567890" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bank Name</label>
+              <input className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                value={formData.bankName} onChange={(e) => setFormData({ ...formData, bankName: e.target.value })} placeholder="e.g. Bank BCA" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>

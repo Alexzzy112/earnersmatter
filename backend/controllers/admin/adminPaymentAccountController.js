@@ -11,7 +11,7 @@ exports.getAllAccounts = async (req, res) => {
   }
 };
 
-const ACCOUNT_ALLOWED_FIELDS = ['accountName', 'accountNumber', 'accountType'];
+const ACCOUNT_ALLOWED_FIELDS = ['accountName', 'accountNumber', 'bankName', 'accountType'];
 
 exports.createAccount = async (req, res) => {
   try {
