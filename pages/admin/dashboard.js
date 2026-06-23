@@ -148,29 +148,46 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="space-y-2">
-                {activity.slice(0, 10).map((act, idx) => (
+                {activity.map((act, idx) => (
                   <div key={act._id || idx} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-dark-700 hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center flex-shrink-0">
-                      <FiChevronRight className="w-4 h-4 text-primary-500" />
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      ['deposit', 'credit'].includes(act.type)
+                        ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                        : ['withdrawal', 'debit'].includes(act.type)
+                        ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                        : 'bg-primary-50 dark:bg-primary-900/20 text-primary-500'
+                    }`}>
+                      <FiChevronRight className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {act.description || act.message || act.action || 'Action performed'}
+                        {act.description || 'Action performed'}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {act.admin || act.user?.username || act.user?.email || ''}
+                        {act.user?.username || act.user?.email || ''}
                         {act.createdAt && ` • ${new Date(act.createdAt).toLocaleString()}`}
                       </p>
                     </div>
-                    {act.type && (
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
-                        ['deposit', 'credit'].includes(act.type)
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
+                      ['deposit', 'credit'].includes(act.type)
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                        : ['withdrawal', 'debit'].includes(act.type)
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                        : ['earning', 'investment'].includes(act.type)
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                    }`}>
+                      {act.type}
+                    </span>
+                    {act.status && (
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        act.status === 'completed' || act.status === 'approved'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                          : ['withdrawal', 'debit'].includes(act.type)
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                          : act.status === 'pending'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                       }`}>
-                        {act.type}
+                        {act.status}
                       </span>
                     )}
                   </div>

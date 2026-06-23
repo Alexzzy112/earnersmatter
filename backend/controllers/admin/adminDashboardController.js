@@ -80,12 +80,39 @@ exports.getDashboardStats = async (req, res) => {
 
 exports.getRecentActivity = async (req, res) => {
   try {
-    const logs = await AuditLog.find()
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .populate('userId', 'username email');
+    const [logs, transactions] = await Promise.all([
+      AuditLog.find()
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate('userId', 'username email'),
+      Transaction.find()
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate('userId', 'username email'),
+    ]);
 
-    res.status(200).json({ success: true, data: logs });
+    const mappedLogs = logs.map((l) => ({
+      _id: l._id,
+      description: l.action.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+      user: l.userId,
+      type: l.entityType?.toLowerCase() || 'action',
+      createdAt: l.createdAt,
+    }));
+
+    const mappedTransactions = transactions.map((t) => ({
+      _id: t._id,
+      description: `${t.type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} — ₦${Number(t.amount).toLocaleString()}`,
+      user: t.userId,
+      type: t.type,
+      status: t.status,
+      createdAt: t.createdAt,
+    }));
+
+    const merged = [...mappedLogs, ...mappedTransactions]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 15);
+
+    res.status(200).json({ success: true, data: merged });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
