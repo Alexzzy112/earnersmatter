@@ -98,7 +98,7 @@ export default function AdminUsers() {
         username: editUser.username,
         email: editUser.email,
         phone: editUser.phone,
-        balance: editUser.balance,
+        walletBalance: editUser.walletBalance,
       });
       toast.success('User updated successfully');
       setEditUser(null);
@@ -164,7 +164,7 @@ export default function AdminUsers() {
                       <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{user.username}</td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{user.email}</td>
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{user.phone || '—'}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">₦{(user.balance || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">₦{(user.walletBalance || 0).toLocaleString()}</td>
                       <td className="px-4 py-3"><StatusBadge status={user.status || 'active'} /></td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}
@@ -235,7 +235,7 @@ export default function AdminUsers() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Balance</p>
-                  <p className="font-bold text-lg mt-1 text-green-600 dark:text-green-400">₦{(viewUser?.balance || 0).toLocaleString()}</p>
+                  <p className="font-bold text-lg mt-1 text-green-600 dark:text-green-400">₦{(viewUser?.walletBalance || 0).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Status</p>
@@ -323,7 +323,7 @@ export default function AdminUsers() {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Balance</label>
               <input type="number" step="0.01" className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                value={editUser?.balance || 0} onChange={(e) => setEditUser({ ...editUser, balance: parseFloat(e.target.value) || 0 })} />
+                value={editUser?.walletBalance || 0} onChange={(e) => setEditUser({ ...editUser, walletBalance: parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button onClick={() => setEditUser(null)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700">Cancel</button>
