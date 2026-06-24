@@ -66,8 +66,8 @@ const createWithdrawal = async (req, res) => {
         });
       }
 
-      const hour = new Date().getHours();
-      if (hour < 8 || hour >= 15) {
+      const tzHour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Lagos', hour: 'numeric', hour12: false }).format());
+      if (tzHour < 8 || tzHour >= 15) {
         return res.status(400).json({
           success: false,
           message: 'Referral Bonus withdrawals are only available from 8:00 AM to 3:00 PM daily',
