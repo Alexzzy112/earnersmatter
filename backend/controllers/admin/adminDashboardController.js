@@ -27,7 +27,7 @@ exports.getDashboardStats = async (req, res) => {
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ]),
       Withdrawal.aggregate([
-        { $match: { status: 'approved' } },
+        { $match: { status: { $in: ['approved', 'completed'] } } },
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ]),
       Investment.aggregate([
