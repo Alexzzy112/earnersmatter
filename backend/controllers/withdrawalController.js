@@ -46,7 +46,7 @@ const createWithdrawal = async (req, res) => {
       }
 
       const daysArray = [3];
-      const today = new Date().getDay();
+      const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Africa/Lagos' })).getDay();
       if (!daysArray.includes(today)) {
         return res.status(400).json({
           success: false,
