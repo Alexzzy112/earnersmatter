@@ -1,5 +1,6 @@
 const Withdrawal = require('../../models/Withdrawal');
 const User = require('../../models/User');
+const Transaction = require('../../models/Transaction');
 const Notification = require('../../models/Notification');
 const { paginate } = require('../../utils/helpers');
 const { logAction } = require('../../utils/auditLogger');
@@ -59,6 +60,11 @@ exports.approveWithdrawal = async (req, res) => {
     withdrawal.reviewedBy = req.user._id;
     withdrawal.reviewedAt = new Date();
     await withdrawal.save();
+
+    await Transaction.updateMany(
+      { userId: withdrawal.userId, type: 'withdrawal', status: 'pending' },
+      { status: 'approved' }
+    );
 
     await logAction({
       userId: req.user._id,
@@ -156,6 +162,11 @@ exports.rejectWithdrawal = async (req, res) => {
     user[balanceField] += withdrawal.amount;
     await user.save();
 
+    await Transaction.updateMany(
+      { userId: withdrawal.userId, type: 'withdrawal', status: 'pending' },
+      { status: 'rejected' }
+    );
+
     await logAction({
       userId: req.user._id,
       action: 'withdrawal_rejected',
@@ -210,6 +221,11 @@ exports.revertWithdrawal = async (req, res) => {
     withdrawal.reviewedAt = undefined;
     withdrawal.completedAt = undefined;
     await withdrawal.save();
+
+    await Transaction.updateMany(
+      { userId: withdrawal.userId, type: 'withdrawal', status: previousStatus },
+      { status: 'pending' }
+    );
 
     await logAction({
       userId: req.user._id,
@@ -267,6 +283,11 @@ exports.revertAllWithdrawals = async (req, res) => {
           await withdrawal.save();
         }
 
+        await Transaction.updateMany(
+          { userId: withdrawal.userId._id || withdrawal.userId, type: 'withdrawal', status },
+          { status: 'pending' }
+        );
+
         await logAction({
           userId: req.user._id,
           action: 'withdrawal_reverted',
@@ -310,6 +331,11 @@ exports.completeWithdrawal = async (req, res) => {
     const user = await User.findById(withdrawal.userId);
     user.totalWithdrawals += withdrawal.amount;
     await user.save();
+
+    await Transaction.updateMany(
+      { userId: withdrawal.userId, type: 'withdrawal', status: 'approved' },
+      { status: 'completed' }
+    );
 
     await logAction({
       userId: req.user._id,

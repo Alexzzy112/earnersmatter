@@ -108,7 +108,7 @@ export default function TransactionsPage() {
                         <td className={isDebit ? 'text-danger-500 font-medium' : 'text-success-500 font-medium'}>
                           {isDebit ? '-' : '+'}₦{Number(tx.amount).toLocaleString()}
                         </td>
-                        <td className="font-medium">₦{Number(tx.balance || 0).toLocaleString()}</td>
+                        <td className="font-medium">₦{Number(tx.balanceAfter || 0).toLocaleString()}</td>
                         <td className="text-dark-500 text-sm max-w-[200px] truncate">{tx.description || tx.note || '-'}</td>
                         <td>{statusBadge(tx.status)}</td>
                       </tr>
