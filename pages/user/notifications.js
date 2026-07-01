@@ -126,7 +126,7 @@ export default function NotificationsPage() {
                         >
                           {n.title || n.message?.substring(0, 60)}
                         </h3>
-                        <p className="text-xs text-dark-400 mt-1 line-clamp-2">
+                        <p className="text-xs text-dark-400 mt-1">
                           {n.message || n.body || ''}
                         </p>
                       </div>
